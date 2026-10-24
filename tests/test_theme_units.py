@@ -38,6 +38,15 @@ class ActiveSectionTest(unittest.TestCase):
         self.assertEqual("Home", active_section("/"))
         self.assertEqual("Home", active_section("/index.html"))
 
+    def test_html_rule_applies_to_every_item_but_home(self):
+        # Each non-root href without its slash plus .html is that item's page;
+        # Home's href is "/", which the rule never reads as "/.html" or "/home.html".
+        self.assertEqual("Docs", active_section("/docs.html"))
+        self.assertEqual("Vector", active_section("/vector.html"))
+        self.assertEqual("Blog", active_section("/blog.html"))
+        for path in ("/home.html", "/.html", ".html"):
+            self.assertIsNone(active_section(path), path)
+
     def test_unowned_paths_are_none(self):
         # The .html rule is exact, not a fuzzy prefix: no item owns these.
         for path in ("/about.html", "/docs-old/x.html", "/blogger.html", "/vector-x/", "/vector.htm",

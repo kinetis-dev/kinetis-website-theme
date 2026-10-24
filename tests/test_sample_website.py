@@ -231,7 +231,9 @@ def input_body(name):
     raw = (INPUTS / name).read_text(encoding="utf-8")
     body = raw[raw.index("<body>\n") + len("<body>\n") : raw.index("</body>")]
     body = body.replace('<main class="tiles">', '<div class="tiles">').replace("</main>", "</div>")
-    assert len(INPUT_FOOTER.findall(body)) == 1, f"{name}: expected exactly one <footer>"
+    footers = len(INPUT_FOOTER.findall(body))
+    if footers != 1:
+        raise AssertionError(f"{name}: expected exactly one <footer> in the input body, found {footers}")
     return INPUT_FOOTER.sub("", body)
 
 

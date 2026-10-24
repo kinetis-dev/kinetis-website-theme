@@ -120,9 +120,10 @@ within pydata's `<main id="main-content">`, which stays the page's only main
 landmark. The page has no sidebars (the primary sidebar only carries the
 navbar items on narrow screens), no article chrome and no prev/next. It ends
 with pydata's footer and the shared `kinetis-footer`, exactly as docs pages
-do. `<title>` is the page title verbatim, with no ` - Project` suffix. The favicons and the noindex meta are as on every page.
-`kinetis-landing.css` is the website's `style.css` scoped to
-`.kinetis-landing`, without its footer rules, and only landing pages link it.
+do. `<title>` is the page title verbatim, with no ` - Project` suffix. The
+favicons and the noindex meta are as on every page. `kinetis-landing.css` is
+the website's `style.css` scoped to `.kinetis-landing`, without its footer
+rules, and only landing pages link it.
 
 The body is the old static page's `<body>` markup in a MyST `{raw} html`
 block, with the JSON-LD `<script type="application/ld+json">` included.
