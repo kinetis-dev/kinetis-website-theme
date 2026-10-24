@@ -278,12 +278,14 @@ class IndexAsDirectoryTest(unittest.TestCase):
 class SetupTest(unittest.TestCase):
     def test_handlers_and_priorities(self):
         connected = []
+        scripts = []
         app = SimpleNamespace(
             builder=None,
             config=SimpleNamespace(templates_path=[]),
             add_html_theme=lambda *args: None,
             add_config_value=lambda *args, **kwargs: None,
             add_css_file=lambda *args, **kwargs: None,
+            add_js_file=lambda *args, **kwargs: scripts.append((args, kwargs)),
             connect=lambda event, handler, priority=500: connected.append((event, handler.__name__, priority)),
         )
         theme.setup(app)
@@ -295,6 +297,8 @@ class SetupTest(unittest.TestCase):
         # After sphinx-sitemap's create_sitemap (500).
         self.assertIn(("build-finished", "prune_sitemap", 600), connected)
         self.assertIn(("builder-inited", "remove_previous_sitemap", 500), connected)
+        # Neither defer nor async, so it runs before pydata's deferred script.
+        self.assertEqual([(("kinetis-sidebar-scroll.js",), {})], scripts)
 
 
 class LandingTemplateTest(unittest.TestCase):

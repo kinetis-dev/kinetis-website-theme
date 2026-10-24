@@ -4,6 +4,33 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.3.1
+
+The primary sidebar remembers its scroll position per docs set. A patch:
+a behaviour fix with no nav, template or variable change.
+
+**Consumer impact:** none beyond the pin.
+
+Fixed:
+
+- pydata-sphinx-theme 0.23.0 keeps the sidebar's scroll position in
+  `sessionStorage` under one fixed key, `sidebar-scroll-top`, and
+  `sessionStorage` is per origin. `/docs/` and `/vector/docs/` on
+  kinetis.dev shared that value, so a menu scrolled under one opened at the
+  same offset under the other.
+
+Added:
+
+- `kinetis-sidebar-scroll.js`, loaded in the head on every page, neither
+  deferred nor async, so it runs before pydata's deferred script. It keeps
+  the value under `kinetis-sidebar-scroll-top:` plus the docs set's root
+  path (`data-content_root`, else `DOCUMENTATION_OPTIONS.URL_ROOT`,
+  resolved against the page URL). On load it copies that value into
+  `sidebar-scroll-top`, or removes the key when the set has none, so the
+  first view of a set scrolls its active link into view. On `beforeunload`,
+  on pages with `.bd-docs-nav`, it saves `div.bd-sidebar`'s `scrollTop`.
+  When `sessionStorage` throws, pydata behaves as before.
+
 ## 0.3.0
 
 The navigation gains the Vector landing page and the blog, and every page,

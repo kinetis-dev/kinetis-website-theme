@@ -14,7 +14,8 @@ a post (the sitemap must come out the same), one in which sphinx-sitemap
 writes nothing (the previous, already-pruned sitemap must not be pruned
 again; the build fails instead). The docs sample, tests/sample-site, is
 built once too, for the assertions every page of both samples must meet:
-the default header height and the one shared footer.
+the default header height, the one shared footer and the sidebar scroll
+script in the head.
 """
 
 import json
@@ -57,6 +58,8 @@ POSTS = ["blog/posts/hello-kinetis.html", "blog/posts/second-post.html"]
 LANDING_CSS = "_static/kinetis-landing.css"
 GITHUB = "https://github.com/kinetis-dev"
 FOOTER = '<p class="kinetis-footer">'
+SIDEBAR_SCROLL_JS = "kinetis-sidebar-scroll.js"
+PYDATA_JS = "scripts/pydata-sphinx-theme.js"
 
 BUILDS = {}
 RESULTS = {}
@@ -139,6 +142,7 @@ class Page(HTMLParser):
         self.landmarks = []
         self.classes = []
         self.elements = []
+        self.scripts = []
         self.feed(self.raw)
         self.close()
 
@@ -157,6 +161,8 @@ class Page(HTMLParser):
         self.elements.append((tag, a))
         if tag == "main" or a.get("role") == "main":
             self.landmarks.append((tag, a))
+        if tag == "script":
+            self.scripts.append((self.in_head, a))
         if not self.in_head:
             return
         if tag == "title" and self.title is None:
@@ -304,6 +310,37 @@ class BuildTest(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn(f"kinetis_prune_sitemap: the sitemap", result.stdout + result.stderr)
         self.assertIn(f"{SITEMAP} does not exist", result.stdout + result.stderr)
+
+
+class SidebarScrollScriptTest(unittest.TestCase):
+    def test_every_page_of_both_samples_loads_it_once_in_the_head_before_pydata(self):
+        # Docs pages, landing, 404, blog and listings. Not deferred and not
+        # async, so it runs before pydata's deferred script reads the key.
+        names = {"serial": html_pages("serial"), "docs-sample": html_pages("docs-sample")}
+        for name in ("index.html", "404.html", "blog/index.html", *POSTS):
+            self.assertIn(name, names["serial"])
+        for name in ("index.html", "guide.html", "404.html", "search.html"):
+            self.assertIn(name, names["docs-sample"])
+        for build, pages in names.items():
+            for name in pages:
+                with self.subTest(build=build, page=name):
+                    scripts = page(name, build).scripts
+                    ours = [i for i, (_, a) in enumerate(scripts) if SIDEBAR_SCROLL_JS in a.get("src", "")]
+                    pydata = [i for i, (_, a) in enumerate(scripts) if PYDATA_JS in a.get("src", "")]
+                    self.assertEqual(1, len(ours), scripts)
+                    self.assertEqual(1, len(pydata), scripts)
+                    in_head, attrs = scripts[ours[0]]
+                    self.assertTrue(in_head, attrs)
+                    self.assertNotIn("defer", attrs)
+                    self.assertNotIn("async", attrs)
+                    self.assertNotIn("type", attrs)
+                    self.assertIn("defer", scripts[pydata[0]][1])
+                    self.assertLess(ours[0], pydata[0])
+
+    def test_shipped_as_theme_static(self):
+        for build in ("serial", "docs-sample"):
+            with self.subTest(build=build):
+                self.assertTrue((BUILDS[build] / "_static" / SIDEBAR_SCROLL_JS).is_file())
 
 
 class LandingTest(unittest.TestCase):

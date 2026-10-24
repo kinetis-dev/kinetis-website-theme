@@ -66,7 +66,7 @@ no landing pages and change nothing but the pin.
 From a checkout of the consumer:
 
 ```sh
-python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.3.0
+python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.3.1
 ```
 
 It rewrites only the pin line, keeps any extras, and prints the diff. It

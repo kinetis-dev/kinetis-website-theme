@@ -34,6 +34,9 @@ jobs:
         with:
           name: wheel
           path: dist
+      # python:3.12-slim has no node; tests/test_sidebar_scroll.py skips without it.
+      - name: Install node for the sidebar scroll script's behaviour test
+        run: apt-get update -q && apt-get install -y -q --no-install-recommends nodejs && node --version
       - name: Install the wheel with both extras, plus both sample projects' extensions
         run: |
           wheel="$(ls dist/*.whl)"

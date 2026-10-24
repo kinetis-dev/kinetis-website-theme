@@ -20,7 +20,7 @@ from sphinx.util import logging
 
 from .nav import NAV, active_section
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 logger = logging.getLogger(__name__)
 
@@ -358,5 +358,8 @@ def setup(app):
     app.connect("build-finished", prune_sitemap, priority=PRUNE_SITEMAP_PRIORITY)
     # Loads after pydata's stylesheet and before the consumer's html_css_files.
     app.add_css_file("kinetis.css")
+    # Neither defer nor async: it runs while the head is parsed, before
+    # pydata's deferred script reads the sidebar scroll key it scopes.
+    app.add_js_file("kinetis-sidebar-scroll.js")
 
     return {"version": __version__, "parallel_read_safe": True, "parallel_write_safe": True}
