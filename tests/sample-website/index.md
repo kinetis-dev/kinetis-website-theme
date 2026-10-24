@@ -56,7 +56,7 @@ blog/index
                 <h2>Get Started <span class="arrow">&rarr;</span></h2>
                 <p>Install Kinetis, get a route running in minutes, then build a real application on it: database, queue, scheduled command, live updates.</p>
             </a>
-            <a class="tile" href="https://github.com/kinetis-dev/kinetis">
+            <a class="tile" href="https://github.com/kinetis-dev/">
                 <h2>Source on GitHub <span class="arrow">&rarr;</span></h2>
                 <p>MIT licensed. Every package, every release, in the open.</p>
             </a>

@@ -222,19 +222,29 @@ def input_head(name):
 INPUT_FOOTER = re.compile(r"\s*<footer>.*?</footer>", re.DOTALL)
 
 
+INPUT_GITHUB_TILE = '<a class="tile" href="https://github.com/kinetis-dev/kinetis">'
+SAMPLE_GITHUB_TILE = '<a class="tile" href="https://github.com/kinetis-dev/">'
+
+
 def input_body(name):
-    """The input page's <body> content, with the two allowed deviations:
+    """The input page's <body> content, with the three allowed deviations:
     <main class="tiles"> demoted to <div class="tiles"> (pydata's <main> is
-    the page's only landmark), and the input's single <footer> element
-    removed with the whitespace before it (pydata's footer with the shared
-    kinetis-footer is the page's only footer)."""
+    the page's only landmark); the input's single <footer> element removed
+    with the whitespace before it (pydata's footer with the shared
+    kinetis-footer is the page's only footer); and the single "Source on
+    GitHub" tile linking the organisation, https://github.com/kinetis-dev/,
+    instead of the kinetis repository."""
     raw = (INPUTS / name).read_text(encoding="utf-8")
     body = raw[raw.index("<body>\n") + len("<body>\n") : raw.index("</body>")]
     body = body.replace('<main class="tiles">', '<div class="tiles">').replace("</main>", "</div>")
     footers = len(INPUT_FOOTER.findall(body))
     if footers != 1:
         raise AssertionError(f"{name}: expected exactly one <footer> in the input body, found {footers}")
-    return INPUT_FOOTER.sub("", body)
+    body = INPUT_FOOTER.sub("", body)
+    tiles = body.count(INPUT_GITHUB_TILE)
+    if tiles != 1:
+        raise AssertionError(f"{name}: expected exactly one {INPUT_GITHUB_TILE} in the input body, found {tiles}")
+    return body.replace(INPUT_GITHUB_TILE, SAMPLE_GITHUB_TILE)
 
 
 def input_jsonld():
@@ -365,18 +375,19 @@ class LandingTest(unittest.TestCase):
         self.assertEqual(1, raw.count("data-pagefind-body"))
         self.assertIn('<div class="kinetis-landing" data-pagefind-body>', raw)
 
-    def test_landing_and_404_link_github_only_in_the_footer_and_the_body(self):
-        # Outside the body, the footer's organisation link is the only
-        # github.com link, as on docs pages; the body keeps the input's own
-        # "Source on GitHub" tile.
+    def test_landing_and_404_link_only_the_github_organisation(self):
+        # As on docs pages, every github.com link is the organisation: the
+        # footer's, unchanged and without a trailing slash, and the body's
+        # one "Source on GitHub" tile, written with one.
         for name in ("index.html", "404.html"):
             with self.subTest(page=name):
                 raw = page(name).raw
-                body = github_links(landing_content(raw))
-                self.assertEqual(github_links(input_body(name)), body)
-                self.assertNotIn(GITHUB, body)
+                links = github_links(raw)
+                self.assertTrue(links)
+                for link in links:
+                    self.assertEqual(GITHUB, link.rstrip("/"), link)
                 self.assertEqual([GITHUB], github_links(pydata_footer(raw)))
-                self.assertEqual([*body, GITHUB], github_links(raw))
+                self.assertEqual([GITHUB + "/"], github_links(landing_content(raw)))
 
     def test_no_header_github_icon(self):
         self.assertNotIn("navbar-icon-links", page("index.html").raw)

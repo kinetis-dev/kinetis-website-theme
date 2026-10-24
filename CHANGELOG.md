@@ -38,6 +38,9 @@ Changed:
   heading comment; the footer takes pydata's footer styling.
 - `tests/sample-website/`'s landing and 404 bodies no longer carry a
   `<footer>`; the test fixtures in `tests/website-inputs/` are unchanged.
+- The sample landing and 404 "Source on GitHub" tile links the organisation,
+  `https://github.com/kinetis-dev/` (was `…/kinetis-dev/kinetis`), so every
+  GitHub link on those pages is the organisation, as on docs pages.
 
 ## 0.2.0
 
