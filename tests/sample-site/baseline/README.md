@@ -7,6 +7,12 @@ files, so a theme change that drops a heading id, changes a `<title>`,
 canonical or `og:url`, or loses a page fails CI here before any consumer
 sees it. The file format is described in kinetis `docs/baseline/README.md`.
 
+`anchors.json` lists, per page, the ids inside the page's main landmark. That
+is the outermost element that is a `<main>` tag or has `role="main"`: pydata's
+`<main>` here, Furo's `<article role="main">` in a Furo build. The landmark's
+own id, `sd-` ids and ids inside a `data-pagefind-ignore` subtree are left
+out.
+
 `aux.txt`, `external-anchors.txt` and `redirects.txt` are curated; the other
 four files are derived.
 

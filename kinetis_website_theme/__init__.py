@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from .nav import NAV, active_section
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 THEME_PATH = Path(__file__).parent / "theme" / "kinetis_website_theme"
 

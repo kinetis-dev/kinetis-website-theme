@@ -76,6 +76,7 @@ class Page(HTMLParser):
         self.github_links = []
         self.packagist_links = []
         self.articles = []
+        self.role_main = []
         self.feed(self.raw)
         self.close()
 
@@ -107,6 +108,8 @@ class Page(HTMLParser):
             self.packagist_links.append(a["href"])
         if tag == "article":
             self.articles.append(a)
+        if a.get("role") == "main":
+            self.role_main.append((tag, a))
 
     def handle_endtag(self, tag):
         if tag == "head":
@@ -253,11 +256,20 @@ class HeadTest(unittest.TestCase):
         self.assertIn('<link rel="canonical" href="https://kinetis.dev/docs/guide.html" />', raw)
         self.assertIn('<meta property="og:url" content="https://kinetis.dev/docs/guide.html" />', raw)
 
-    def test_article_is_role_main_and_the_pagefind_body(self):
+    def test_article_is_the_pagefind_body_and_not_a_landmark(self):
         articles = page("Docs", "guide.html").articles
         self.assertEqual(1, len(articles))
-        self.assertEqual("main", articles[0].get("role"))
+        self.assertNotIn("role", articles[0])
         self.assertIn("data-pagefind-body", articles[0])
+
+    def test_every_page_has_one_main_landmark(self):
+        for section in BUILDS:
+            for name in pages(section):
+                with self.subTest(section=section, page=name):
+                    landmarks = page(section, name).role_main
+                    self.assertEqual(1, len(landmarks), landmarks)
+                    self.assertEqual("main", landmarks[0][0])
+                    self.assertEqual("main-content", landmarks[0][1].get("id"))
 
 
 class GuardSelfTest(unittest.TestCase):
@@ -284,9 +296,9 @@ class GuardSelfTest(unittest.TestCase):
             capture_output=True, text=True,
         )
         self.assertEqual(1, result.returncode, result.stdout)
-        self.assertIn('anchor guide.html#environment-variables: missing from <article role="main">', result.stdout)
+        self.assertIn('anchor guide.html#environment-variables: missing from the main landmark', result.stdout)
         self.assertEqual(
-            ['anchor guide.html#environment-variables: missing from <article role="main">'],
+            ['anchor guide.html#environment-variables: missing from the main landmark'],
             load_guard().check(build),
         )
 

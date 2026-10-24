@@ -39,11 +39,11 @@
     </header>
 {% endblock docs_navbar %}
 
-{#- role="main" on the article, as Furo had it: the URL-baseline guard reads
-   anchors from <article role="main">, and consumer CSS selects on it. #}
+{#- No role="main" here: pydata's <main role="main"> around this block is the
+   page's only main landmark. The article stays the Pagefind body. #}
 {% block docs_body %}
                 {% include "components/searchbox.html" %}
-                <article class="bd-article" role="main" data-pagefind-body>
+                <article class="bd-article" data-pagefind-body>
                   {% block body %}{% endblock %}
                 </article>
 {% endblock docs_body %}

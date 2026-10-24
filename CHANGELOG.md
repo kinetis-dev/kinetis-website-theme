@@ -4,6 +4,25 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.1.1
+
+One main landmark per page. This is a patch release even though it removes an
+attribute, because no released consumer depends on it: neither kinetis nor
+vector-dev has integrated 0.1.0.
+
+- `role="main"` is removed from `<article class="bd-article">`. This reverses
+  the 0.1.0 "restored on the article" entry. pydata's
+  `<main id="main-content" role="main">` is now the page's single main
+  landmark, and the article stays the `data-pagefind-body`.
+- The `kinetis.css` heading selectors use `.bd-article h1`–`h6` instead of
+  `article[role="main"]`. They match the same elements.
+- `tools/check_url_baseline.py` reads anchors from the page's main landmark,
+  which is the outermost `<main>` or `role="main"` element, and skips
+  `data-pagefind-ignore` subtrees. Under Furo that landmark is still
+  `<article role="main">`, so Furo results are unchanged. Under pydata it also
+  covers pages without an article, such as `search.html`. The missing-anchor
+  error now reads `missing from the main landmark`.
+
 ## 0.1.0
 
 First release. No consumer uses it yet.
