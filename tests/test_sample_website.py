@@ -12,7 +12,9 @@ assertion must then fail), and one never writes a sitemap (the build must
 then fail). Two rebuild an output directory without -E: one after touching
 a post (the sitemap must come out the same), one in which sphinx-sitemap
 writes nothing (the previous, already-pruned sitemap must not be pruned
-again; the build fails instead).
+again; the build fails instead). The docs sample, tests/sample-site, is
+built once too, for the assertions every page of both samples must meet:
+the default header height and the one shared footer.
 """
 
 import json
@@ -30,6 +32,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SAMPLE = REPO / "tests" / "sample-website"
+DOCS_SAMPLE = REPO / "tests" / "sample-site"
 INPUTS = REPO / "tests" / "website-inputs"
 
 SITE = "https://kinetis.dev/"
@@ -52,6 +55,8 @@ LISTINGS = [
 ]
 POSTS = ["blog/posts/hello-kinetis.html", "blog/posts/second-post.html"]
 LANDING_CSS = "_static/kinetis-landing.css"
+GITHUB = "https://github.com/kinetis-dev"
+FOOTER = '<p class="kinetis-footer">'
 
 BUILDS = {}
 RESULTS = {}
@@ -110,6 +115,9 @@ def setUpModule():
     out = BUILDS["stale"] = root / "stale"
     RESULTS["stale-first"] = sphinx(SAMPLE, out, cwd=root)
     RESULTS["stale"] = sphinx(SAMPLE, out, "-D", "sitemap_excludes=*", cwd=root, fresh=False)
+
+    out = BUILDS["docs-sample"] = root / "docs-sample"
+    RESULTS["docs-sample"] = sphinx(DOCS_SAMPLE, out, cwd=root)
 
 
 class Page(HTMLParser):
@@ -211,13 +219,20 @@ def input_head(name):
     return parsed
 
 
+INPUT_FOOTER = re.compile(r"\s*<footer>.*?</footer>", re.DOTALL)
+
+
 def input_body(name):
-    """The input page's <body> content, with the one allowed deviation:
+    """The input page's <body> content, with the two allowed deviations:
     <main class="tiles"> demoted to <div class="tiles"> (pydata's <main> is
-    the page's only landmark)."""
+    the page's only landmark), and the input's single <footer> element
+    removed with the whitespace before it (pydata's footer with the shared
+    kinetis-footer is the page's only footer)."""
     raw = (INPUTS / name).read_text(encoding="utf-8")
     body = raw[raw.index("<body>\n") + len("<body>\n") : raw.index("</body>")]
-    return body.replace('<main class="tiles">', '<div class="tiles">').replace("</main>", "</div>")
+    body = body.replace('<main class="tiles">', '<div class="tiles">').replace("</main>", "</div>")
+    assert len(INPUT_FOOTER.findall(body)) == 1, f"{name}: expected exactly one <footer>"
+    return INPUT_FOOTER.sub("", body)
 
 
 def input_jsonld():
@@ -233,6 +248,26 @@ def landing_content(raw):
     return raw[start:end]
 
 
+def pydata_footer(raw):
+    """The markup of pydata's <footer class="bd-footer">, the last footer on a page."""
+    start = raw.index('<footer class="bd-footer">')
+    return raw[start : raw.index("</footer>", start) + len("</footer>")]
+
+
+def github_links(raw):
+    return re.findall(r'<a [^>]*href="(https://github\.com[^"]*)"', raw)
+
+
+def nav_links(raw):
+    """(label, active) per link of each kinetis-nav: the header's and pydata's mobile copy."""
+    navs = re.findall(r'<nav class="kinetis-nav" aria-label="Site">(.*?)</nav>', raw, re.DOTALL)
+    return [
+        [(label, 'aria-current="page"' in attrs)
+         for attrs, label in re.findall(r"<a ([^>]*)>([^<]*)</a>", nav)]
+        for nav in navs
+    ]
+
+
 def sitemap_locs(build):
     root = ET.parse(BUILDS[build] / SITEMAP).getroot()
     return [loc.text for loc in root.iter(f"{SITEMAP_NS}loc")]
@@ -240,7 +275,7 @@ def sitemap_locs(build):
 
 class BuildTest(unittest.TestCase):
     def test_builds_are_clean_under_w_keep_going(self):
-        for name in ("serial", "unpruned"):
+        for name in ("serial", "unpruned", "docs-sample"):
             with self.subTest(build=name):
                 result = RESULTS[name]
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
@@ -289,12 +324,14 @@ class LandingTest(unittest.TestCase):
         content = landing_content(page("index.html").raw)
         self.assertIn(input_body("index.html"), content)
 
-    def test_no_sidebars_article_chrome_or_pydata_footer(self):
+    def test_no_sidebars_or_article_chrome_but_pydata_footer(self):
         parsed = page("index.html")
         for cls in ("bd-sidebar-secondary", "sidebar-primary-items__start", "bd-article", "bd-header-article",
-                    "prev-next-footer", "bd-footer-article", "bd-footer-content", "bd-footer", "secondary-toggle"):
+                    "prev-next-footer", "bd-footer-article", "bd-footer-content", "secondary-toggle"):
             with self.subTest(cls=cls):
                 self.assertNotIn(cls, parsed.classes)
+        self.assertEqual(1, parsed.classes.count("bd-footer"))
+        self.assertEqual(1, [tag for tag, a in parsed.elements if "bd-footer" in a.get("class", "").split()].count("footer"))
         self.assertNotIn("article", [tag for tag, _ in parsed.elements])
         # The primary sidebar holds only the navbar items, for narrow screens.
         primary = [a for tag, a in parsed.elements if a.get("id") == "pst-primary-sidebar"]
@@ -315,12 +352,29 @@ class LandingTest(unittest.TestCase):
         self.assertEqual(2, raw.count('<a class="nav-link nav-internal active" href="/" aria-current="page">Home</a>'))
         self.assertEqual(2, raw.count('aria-current="page"'))
 
-    def test_slim_header_and_pagefind_marks(self):
+    def test_default_header_height_and_pagefind_marks(self):
+        # pydata's own 4rem header on every page of both samples, landing and 404 included.
+        for build in ("serial", "docs-sample"):
+            for name in html_pages(build):
+                with self.subTest(build=build, page=name):
+                    self.assertNotIn("--pst-header-height", page(name, build).raw)
         raw = page("index.html").raw
-        self.assertIn("<style>html { --pst-header-height: 3rem; }</style>", raw)
         self.assertIn('<header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none" data-pagefind-ignore>', raw)
         self.assertEqual(1, raw.count("data-pagefind-body"))
         self.assertIn('<div class="kinetis-landing" data-pagefind-body>', raw)
+
+    def test_landing_and_404_link_github_only_in_the_footer_and_the_body(self):
+        # Outside the body, the footer's organisation link is the only
+        # github.com link, as on docs pages; the body keeps the input's own
+        # "Source on GitHub" tile.
+        for name in ("index.html", "404.html"):
+            with self.subTest(page=name):
+                raw = page(name).raw
+                body = github_links(landing_content(raw))
+                self.assertEqual(github_links(input_body(name)), body)
+                self.assertNotIn(GITHUB, body)
+                self.assertEqual([GITHUB], github_links(pydata_footer(raw)))
+                self.assertEqual([*body, GITHUB], github_links(raw))
 
     def test_no_header_github_icon(self):
         self.assertNotIn("navbar-icon-links", page("index.html").raw)
@@ -332,6 +386,56 @@ class LandingTest(unittest.TestCase):
                 self.assertEqual(1 if name in ("index.html", "404.html") else 0, len(linked), linked)
         self.assertTrue((BUILDS["serial"] / LANDING_CSS).is_file())
         self.assertTrue((BUILDS["serial"] / "_static" / "logo.svg").is_file())
+
+
+class FooterTest(unittest.TestCase):
+    def test_every_page_of_both_samples_has_the_one_shared_footer(self):
+        # Docs pages, landing, 404, blog index, posts, listings and search.
+        names = {"serial": html_pages("serial"), "docs-sample": html_pages("docs-sample")}
+        for name in ("index.html", "404.html", "blog/index.html", *POSTS, *LISTINGS):
+            self.assertIn(name, names["serial"])
+        for name in ("guide.html", "404.html", "search.html", "genindex.html"):
+            self.assertIn(name, names["docs-sample"])
+        for build, pages in names.items():
+            for name in pages:
+                with self.subTest(build=build, page=name):
+                    raw = page(name, build).raw
+                    self.assertEqual(1, raw.count(FOOTER))
+                    self.assertEqual(1, raw.count('<footer class="bd-footer">'))
+                    self.assertEqual(1, pydata_footer(raw).count(FOOTER))
+
+    def test_landing_bodies_carry_no_footer(self):
+        for name in ("index.html", "404.html"):
+            with self.subTest(page=name):
+                self.assertNotIn("<footer", landing_content(page(name).raw))
+
+    def test_the_footer_is_the_themes_kinetis_footer_unchanged(self):
+        expected = pydata_footer(page("guide.html", "docs-sample").raw)
+        for name in ("index.html", "404.html", "blog/index.html", POSTS[0], "blog.html"):
+            with self.subTest(page=name):
+                self.assertEqual(expected, pydata_footer(page(name).raw))
+        self.assertIn(f'<a href="{GITHUB}">GitHub</a>', expected)
+        self.assertIn('<a href="/docs/">Docs</a>', expected)
+
+
+class WebsiteNavTest(unittest.TestCase):
+    def assertActive(self, name, expected):
+        navs = nav_links(page(name).raw)
+        self.assertEqual(2, len(navs), name)
+        for links in navs:
+            self.assertEqual(["Home", "Docs", "Vector", "Blog"], [label for label, _ in links])
+            self.assertEqual([expected] if expected else [], [label for label, active in links if active])
+
+    def test_blog_is_active_on_the_blog_index_posts_and_root_listing(self):
+        for name in ("blog/index.html", *POSTS, "blog.html", "blog/tag/php.html"):
+            with self.subTest(page=name):
+                self.assertActive(name, "Blog")
+
+    def test_home_is_active_on_the_landing_and_nothing_on_404(self):
+        self.assertActive("index.html", "Home")
+        # The 404 page's deployed path is /404.html, which no item owns.
+        self.assertActive("404.html", None)
+        self.assertActive("search.html", None)
 
 
 class NotFoundTest(unittest.TestCase):

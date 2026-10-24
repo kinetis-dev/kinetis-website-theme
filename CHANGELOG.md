@@ -4,6 +4,41 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.3.0
+
+The navigation gains the Vector landing page and the blog, and every page,
+landing and 404 pages included, now has the same header and the same
+footer. Minor under the rule above: the navigation changes.
+
+**Consumer impact:** landing pages now render pydata's footer with the
+theme's `kinetis-footer`. A landing page body (`kinetis_template: landing`,
+404 included) that still carries its own `<footer>` now shows two footers.
+Remove the body's footer when bumping to 0.3.0. The website removes its
+three (`/`, `/404` and `/vector/`) in the same PR that bumps its pin.
+
+Added:
+
+- A Blog nav item, `/blog/`. Every `/blog/...` page is Blog, and so is
+  ablog's root listing `/blog.html`, by one exact rule: a path equal to an
+  item's href without its trailing slash plus `.html`. It is no fuzzy
+  match, so `/blogger.html` and `/docs-old/x.html` belong to no item.
+
+Changed:
+
+- The Vector nav item links to the Vector landing page, `/vector/` (was
+  `/vector/docs/`). Every `/vector/docs/...` page stays Vector by the
+  longest-prefix rule.
+- `kinetis/landing.html` renders pydata's header at its default height, as
+  on docs pages: the `--pst-header-height: 3rem` override is gone.
+- `kinetis/landing.html` keeps pydata's footer, with
+  `footer_start: ["kinetis-footer"]`, so landing and 404 pages show the same
+  footer as docs pages. `kinetis-footer.html` is unchanged. Landing pages
+  still have no article footer (prev/next).
+- `kinetis-landing.css` drops the website's `footer` rules and their
+  heading comment; the footer takes pydata's footer styling.
+- `tests/sample-website/`'s landing and 404 bodies no longer carry a
+  `<footer>`; the test fixtures in `tests/website-inputs/` are unchanged.
+
 ## 0.2.0
 
 What the website needs to become a Sphinx project: a landing template, a

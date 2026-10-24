@@ -16,14 +16,14 @@ adding a navbar and footer that all three properties share.
 Pin the release in the consumer's `requirements.txt`, replacing `furo`:
 
 ```
-kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.2.0/kinetis_website_theme-0.2.0-py3-none-any.whl
+kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.3.0/kinetis_website_theme-0.3.0-py3-none-any.whl
 ```
 
 The website, which needs ABlog and the 404 page, adds the extras (pip
 accepts extras on a direct-URL requirement):
 
 ```
-kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.2.0/kinetis_website_theme-0.2.0-py3-none-any.whl
+kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.3.0/kinetis_website_theme-0.3.0-py3-none-any.whl
 ```
 
 pip downloads only the theme from that URL and resolves its dependencies
@@ -37,12 +37,18 @@ html_theme = "kinetis_website_theme"
 That is all a consumer sets. The theme supplies the rest:
 
 - The navbar: the horizontal Kinetis logo (`logo-h.svg`) linking to `https://kinetis.dev/`, the site
-  navigation (Home, Docs, Vector) with the current section marked, search
-  and the light/dark switcher. It has no GitHub icon (`icon_links` is empty).
+  navigation (Home `/`, Docs `/docs/`, Vector `/vector/`, Blog `/blog/`)
+  with the current section marked, search and the light/dark switcher. It
+  has no GitHub icon (`icon_links` is empty). The section is the item whose
+  href is the longest prefix of the page's deployed path (Home only for the
+  root itself), so every `/vector/docs/` page is Vector; ablog's root
+  listing `/blog.html` is Blog by one exact rule, an href without its
+  trailing slash plus `.html`.
 - The primary sidebar shows the project's whole toctree with its captions, as
   Furo did. The secondary sidebar is "On this page".
 - The footer: copyright, Docs, GitHub (`https://github.com/kinetis-dev`) and
-  Packagist (`https://packagist.org/packages/kinetis/`).
+  Packagist (`https://packagist.org/packages/kinetis/`). It is the same on
+  every page, landing and 404 pages included.
 - The kinetis.dev colours, the heading colours and full-width tables.
 - The three `/assets/favicon.*` links. Leave `html_favicon` unset.
 - `<title>` in Furo's format, `Page - Project` with the project name alone on
@@ -107,20 +113,21 @@ Front matter keys the theme reads:
 | `kinetis_template: landing` | Render the page with `kinetis/landing.html`. |
 | `kinetis_noindex: true` | Add the noindex meta (and prune the page from the sitemap). |
 
-`kinetis/landing.html` keeps pydata's header as a slim bar (3rem) with the
-brand, the site nav and the theme switcher. The page body follows inside
-`<div class="kinetis-landing" data-pagefind-body>`, within pydata's
-`<main id="main-content">`, which stays the page's only main landmark. The
-page has no sidebars (the primary sidebar only carries the navbar items on
-narrow screens), no article chrome, no prev/next and no pydata footer: the
-body brings its own footer. `<title>` is the page title verbatim, with no
-` - Project` suffix. The favicons and the noindex meta are as on every page.
+`kinetis/landing.html` keeps pydata's header, at the same default height as
+on docs pages, with the brand, the site nav and the theme switcher. The page
+body follows inside `<div class="kinetis-landing" data-pagefind-body>`,
+within pydata's `<main id="main-content">`, which stays the page's only main
+landmark. The page has no sidebars (the primary sidebar only carries the
+navbar items on narrow screens), no article chrome and no prev/next. It ends
+with pydata's footer and the shared `kinetis-footer`, exactly as docs pages
+do. `<title>` is the page title verbatim, with no ` - Project` suffix. The favicons and the noindex meta are as on every page.
 `kinetis-landing.css` is the website's `style.css` scoped to
-`.kinetis-landing`, and only landing pages link it.
+`.kinetis-landing`, without its footer rules, and only landing pages link it.
 
 The body is the old static page's `<body>` markup in a MyST `{raw} html`
 block, with the JSON-LD `<script type="application/ld+json">` included.
-Write the body's own `<main>` as a `<div>`.
+Write the body's own `<main>` as a `<div>`, and leave its `<footer>` out:
+the body must not carry a footer of its own, or the page shows two.
 
 **The title.** A MyST front-matter `title:` with no `#` heading does not
 become the Sphinx document title. It only lands in the page metadata, and

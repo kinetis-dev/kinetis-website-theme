@@ -5,8 +5,11 @@ The rules (design 2.5, brief item 2): every selector is prefixed with
 prefers-color-scheme dark block becomes html[data-theme="dark"]
 .kinetis-landing, since pydata always stamps a resolved data-theme on <html>;
 the logo url points at the theme's bundled logo.svg, next to the stylesheet;
-the width @media queries stay, scoped. scope() below applies exactly those
-rules to tests/website-inputs/style.css, and the stylesheet the theme ships
+the width @media queries stay, scoped; a rule whose every selector starts
+with `footer` is dropped, with the comment heading such rules, because
+landing pages show pydata's footer with the shared kinetis-footer and the
+body carries none. scope() below applies exactly those rules to
+tests/website-inputs/style.css, and the stylesheet the theme ships
 must equal its output after the file's header comment, so no colour, value
 or rule can enter or leave the stylesheet by hand.
 """
@@ -32,6 +35,27 @@ def scope_selector(selector):
     return f"{SCOPE} {selector}"
 
 
+FOOTER_SELECTOR = re.compile(r"footer(?![\w-])")
+
+
+def is_footer_rule(prelude):
+    return not prelude.startswith("@") and all(FOOTER_SELECTOR.match(s.strip()) for s in prelude.split(","))
+
+
+def next_prelude(css, i):
+    """The prelude of the rule after offset i, past whitespace, or None."""
+    while i < len(css) and css[i].isspace():
+        i += 1
+    if i >= len(css) or css.startswith("/*", i) or "{" not in css[i:]:
+        return None
+    return css[i : css.index("{", i)].strip()
+
+
+def drop_trailing_whitespace(out):
+    while out and out[-1].isspace():
+        out.pop()
+
+
 def matching_brace(css, start):
     depth = 0
     for i in range(start, len(css)):
@@ -44,14 +68,25 @@ def matching_brace(css, start):
     raise ValueError(f"unbalanced braces from offset {start}")
 
 
-def scope(css):
-    """Apply the scoping rules; comments and whitespace pass through unchanged."""
+def scope(css, dropped=None):
+    """Apply the scoping rules; comments and whitespace pass through unchanged.
+
+    A dropped footer rule or its heading comment goes with the whitespace
+    before it; its source text is appended to ``dropped`` when given.
+    """
+    if dropped is None:
+        dropped = []
     out = []
     i = 0
     while i < len(css):
         if css.startswith("/*", i):
             end = css.index("*/", i) + 2
-            out.append(css[i:end])
+            following = next_prelude(css, end)
+            if following is not None and is_footer_rule(following):
+                drop_trailing_whitespace(out)
+                dropped.append(css[i:end])
+            else:
+                out.append(css[i:end])
             i = end
             continue
         if css[i].isspace():
@@ -71,9 +106,12 @@ def scope(css):
             declarations = "\n".join(line.removeprefix("    ") for line in declarations.split("\n"))
             out.append(f"{DARK_SCOPE} {{{declarations}}}")
         elif prelude.startswith("@media"):
-            out.append(f"{prelude} {{{scope(block)}}}")
+            out.append(f"{prelude} {{{scope(block, dropped)}}}")
         elif prelude.startswith("@"):
             raise ValueError(f"no scoping rule for {prelude}")
+        elif is_footer_rule(prelude):
+            drop_trailing_whitespace(out)
+            dropped.append(css[i : close + 1])
         else:
             selectors = ", ".join(scope_selector(s) for s in prelude.split(","))
             out.append(f"{selectors} {{{block.replace(*LOGO_URLS)}}}")
@@ -118,7 +156,21 @@ class LandingCssTest(unittest.TestCase):
 
         source = STYLE_CSS.read_text(encoding="utf-8")
         shipped = without_header_comment(LANDING_CSS.read_text(encoding="utf-8"))
-        self.assertEqual(values(source), values(shipped))
+        dropped = []
+        scope(source, dropped)
+        # Every value of style.css is either shipped or in a dropped footer rule.
+        self.assertEqual(values(source), sorted(values(shipped) + values("\n".join(dropped))))
+
+    def test_footer_rules_and_their_heading_are_dropped(self):
+        source = STYLE_CSS.read_text(encoding="utf-8")
+        dropped = []
+        scope(source, dropped)
+        self.assertEqual(["/* Footer */", "footer {", "footer a {", "footer a:hover {", "footer .sep {"],
+                         [text.split("\n", 1)[0] for text in dropped])
+        shipped = without_header_comment(LANDING_CSS.read_text(encoding="utf-8"))
+        self.assertNotIn("footer", re.sub(r"/\*.*?\*/", "", shipped, flags=re.DOTALL))
+        self.assertNotIn("/* Footer */", shipped)
+        self.assertIn("color: var(--amber);\n}\n\n.kinetis-landing .eyebrow {", shipped)
 
     def test_dark_mode_keys_off_data_theme_not_the_media_query(self):
         shipped = LANDING_CSS.read_text(encoding="utf-8")

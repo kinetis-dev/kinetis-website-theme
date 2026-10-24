@@ -8,7 +8,10 @@
    prefers-color-scheme dark block becomes html[data-theme="dark"]
    .kinetis-landing, because pydata always stamps the resolved mode on
    <html>; the logo url points at the theme's logo.svg next to this file,
-   so it resolves from any page depth, the 404 page included.
+   so it resolves from any page depth, the 404 page included; the footer
+   rules and their heading comment are dropped, because landing pages show
+   pydata's footer with the shared kinetis-footer, styled as on docs pages,
+   and the body carries no footer of its own.
    tests/test_landing_css.py re-derives everything below this comment from
    tests/website-inputs/style.css. */
 
@@ -238,30 +241,6 @@ html[data-theme="dark"] .kinetis-landing {
 
 .kinetis-landing .tile .arrow {
     color: var(--amber);
-}
-
-/* Footer */
-
-.kinetis-landing footer {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-.kinetis-landing footer a {
-    color: var(--text-muted);
-    text-decoration: none;
-}
-
-.kinetis-landing footer a:hover {
-    color: var(--amber);
-}
-
-.kinetis-landing footer .sep {
-    margin: 0 0.5rem;
 }
 
 .kinetis-landing .eyebrow {

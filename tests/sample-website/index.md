@@ -107,15 +107,5 @@ blog/index
                 </a>
             </div>
         </section>
-
-        <footer>
-            <a href="/docs/">Docs</a>
-            <span class="sep">&middot;</span>
-            <a href="https://github.com/kinetis-dev/kinetis">GitHub</a>
-            <span class="sep">&middot;</span>
-            <a href="https://packagist.org/packages/kinetis/">Packagist</a>
-            <br>
-            Copyright &copy; 2026 Kinetis
-        </footer>
     </div>
 ```

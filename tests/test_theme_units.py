@@ -4,9 +4,11 @@ import tomllib
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 import kinetis_website_theme as theme
-from kinetis_website_theme.nav import NAV, active_section
+from kinetis_website_theme import nav
+from kinetis_website_theme.nav import NAV, Item, active_section
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -14,7 +16,7 @@ REPO = Path(__file__).resolve().parents[1]
 class ActiveSectionTest(unittest.TestCase):
     def test_nav_items_and_order(self):
         self.assertEqual(
-            [("Home", "/"), ("Docs", "/docs/"), ("Vector", "/vector/docs/")],
+            [("Home", "/"), ("Docs", "/docs/"), ("Vector", "/vector/"), ("Blog", "/blog/")],
             [tuple(item) for item in NAV],
         )
 
@@ -23,20 +25,38 @@ class ActiveSectionTest(unittest.TestCase):
             self.assertEqual("Docs", active_section(path), path)
 
     def test_vector_pages_are_vector(self):
-        for path in ("/vector/docs/", "/vector/docs/index.html", "/vector/docs/install.html"):
+        for path in ("/vector/", "/vector/index.html", "/vector/docs/", "/vector/docs/index.html",
+                     "/vector/docs/install.html"):
             self.assertEqual("Vector", active_section(path), path)
+
+    def test_blog_pages_are_blog(self):
+        # /blog.html is ablog's root listing, Blog by the exact .html rule.
+        for path in ("/blog/", "/blog/index.html", "/blog/posts/x.html", "/blog/tag/php.html", "/blog.html"):
+            self.assertEqual("Blog", active_section(path), path)
 
     def test_root_is_home_and_only_the_root(self):
         self.assertEqual("Home", active_section("/"))
         self.assertEqual("Home", active_section("/index.html"))
-        for path in ("/about.html", "/blog/", "/docs-old/x.html", "/vector/", "/vector/index.html"):
+
+    def test_unowned_paths_are_none(self):
+        # The .html rule is exact, not a fuzzy prefix: no item owns these.
+        for path in ("/about.html", "/docs-old/x.html", "/blogger.html", "/vector-x/", "/vector.htm",
+                     "/docs.html/x", "/blog.html/"):
             self.assertIsNone(active_section(path), path)
 
     def test_longest_prefix_wins(self):
-        # /vector/docs/ is under no other item today; the rule must still hold
-        # when Vector moves to /vector/ and a page sits under both.
+        # /vector/docs/x.html is under both /vector/-prefixed hrefs it could
+        # match, /vector/ and an added /vector/docs/; the longer one wins in
+        # either order, and Vector still owns the page with NAV as shipped.
         self.assertEqual("Vector", active_section("/vector/docs/x.html"))
         self.assertNotEqual("Home", active_section("/docs/x.html"))
+        for items in (
+            (Item("Vector", "/vector/"), Item("Vector docs", "/vector/docs/")),
+            (Item("Vector docs", "/vector/docs/"), Item("Vector", "/vector/")),
+        ):
+            with self.subTest(order=[item.href for item in items]), mock.patch.object(nav, "NAV", (NAV[0], *items)):
+                self.assertEqual("Vector docs", active_section("/vector/docs/x.html"))
+                self.assertEqual("Vector", active_section("/vector/x.html"))
 
     def test_url_path_is_baseurl_path_plus_pagename(self):
         self.assertEqual("/docs/guide.html", theme.page_url_path("https://kinetis.dev/docs/", "guide"))

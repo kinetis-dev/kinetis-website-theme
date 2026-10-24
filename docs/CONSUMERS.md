@@ -51,12 +51,22 @@ project that phase 5b can copy.
 - `404.md` uses `orphan: true` and `kinetis_template: landing`, and conf
   enables `notfound.extension` with `notfound_urls_prefix = "/"`.
 
+## Adopting 0.3.0
+
+The navigation changes (Vector links `/vector/`, Blog `/blog/`), so bump in
+the order below, the website first. Landing pages (`kinetis_template:
+landing`, the 404 page included) now render the theme's shared footer, so in
+the same PR as the pin bump the website removes the `<footer>…</footer>`
+element from the bodies of its three landing pages, `/`, `/404` and
+`/vector/`. A body that keeps one shows two footers. The docs consumers have
+no landing pages and change nothing but the pin.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
 
 ```sh
-python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.2.0
+python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.3.0
 ```
 
 It rewrites only the pin line, keeps any extras, and prints the diff. It
