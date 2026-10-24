@@ -4,6 +4,54 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.2.0
+
+What the website needs to become a Sphinx project: a landing template, a
+404 page that works from any URL depth, directory URLs for `index` pages,
+and noindex listings pruned from the sitemap. Docs consumers set none of the
+new options, so their pages change only as listed under "Changed".
+
+Added:
+
+- `kinetis/landing.html`, selected by front matter `kinetis_template: landing`.
+  pydata's header is rendered as a 3rem bar, followed by the page body inside
+  `<div class="kinetis-landing" data-pagefind-body>` in pydata's single
+  `<main>` landmark. The page has no sidebars, article chrome, prev/next or
+  pydata footer, and its `<title>` is the page title with no suffix.
+- `kinetis-landing.css`: the website's `style.css` scoped mechanically to
+  `.kinetis-landing`, with dark mode keyed off `html[data-theme="dark"]` and
+  the logo url at the bundled `logo.svg`. Only landing pages link it.
+- 404 support: a `404.md` with `kinetis_template: landing`, rendered by
+  sphinx-notfound-page with `notfound_urls_prefix = "/"`, gets absolute links
+  to every asset. No separate template.
+- `kinetis_index_as_directory`: canonical and `og:url` of `index` and
+  `*/index` pages end at the directory. An `og:url` in front matter wins. The
+  handler runs at priority 800, after sphinxext-opengraph.
+- `kinetis_prune_sitemap`: a `build-finished` handler at priority 600, after
+  sphinx-sitemap, drops noindex pages from `sitemap_filename` and, with
+  `kinetis_index_as_directory`, rewrites `index` locs. It needs
+  `sitemap_url_scheme = "{link}"`. It fails the build clearly when this
+  build wrote no sitemap (an earlier build's file is deleted at
+  `builder-inited`, so it is never pruned twice) and when a loc maps to no
+  page of the build. The noindex set comes from the environment, so `-j`
+  builds prune the same pages.
+- ABlog hooks in `kinetis.css`: `.ablog-post` entries and ablog's sidebar
+  templates, on the theme's tokens.
+- `tests/sample-website/`, a kinetis.dev-shaped project with landing, 404,
+  blog and pruned sitemap, built and asserted on in CI. The goldens harness
+  covers it too: landing, 404 (from a nested missing URL) and a blog post,
+  light and dark.
+
+Changed:
+
+- The header has no GitHub icon: `icon_links` defaults to `[]`, and
+  `navbar-icon-links` is gone from `navbar_end`. The footer keeps GitHub
+  (`https://github.com/kinetis-dev`).
+- The footer's Packagist link is `https://packagist.org/packages/kinetis/`, the
+  vendor page (was `…/kinetis/framework`).
+- `kinetis.css` gains the ABlog rules, so its `?v=` checksum changes on every
+  page. Docs pages have no ABlog markup, so they render the same.
+
 ## 0.1.1
 
 One main landmark per page. This is a patch release even though it removes an

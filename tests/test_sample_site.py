@@ -167,6 +167,14 @@ class BuildTest(unittest.TestCase):
             self.assertTrue((static / name).is_file(), name)
         self.assertIn('href="_static/kinetis.css', page("Docs", "guide.html").raw)
 
+    def test_landing_stylesheet_is_linked_on_no_docs_page(self):
+        # Shipped with the theme, linked only by kinetis/landing.html pages.
+        self.assertTrue((BUILDS["Docs"] / "_static" / "kinetis-landing.css").is_file())
+        for section in BUILDS:
+            for name in pages(section):
+                with self.subTest(section=section, page=name):
+                    self.assertNotIn("kinetis-landing", page(section, name).raw)
+
 
 class NavTest(unittest.TestCase):
     def assertActive(self, section, name, expected):

@@ -1,0 +1,274 @@
+/* kinetis.dev landing pages: kinetis-website's css/style.css (website
+   commit 23a08af), scoped mechanically to .kinetis-landing, the element
+   kinetis/landing.html wraps the page body in. Linked only on pages with
+   `kinetis_template: landing`, never on docs pages.
+
+   The rules, and nothing else: every selector is prefixed with
+   .kinetis-landing; :root and body become .kinetis-landing itself; the
+   prefers-color-scheme dark block becomes html[data-theme="dark"]
+   .kinetis-landing, because pydata always stamps the resolved mode on
+   <html>; the logo url points at the theme's logo.svg next to this file,
+   so it resolves from any page depth, the 404 page included.
+   tests/test_landing_css.py re-derives everything below this comment from
+   tests/website-inputs/style.css. */
+
+.kinetis-landing {
+    --amber: #D97706;
+    --amber-light: #F59E0B;
+    --red: #DC2626;
+    --bg: #ffffff;
+    --bg-card: #f8f9fb;
+    --text: #1a1c1e;
+    --text-muted: #52585f;
+    --border: #e0e2e6;
+}
+
+html[data-theme="dark"] .kinetis-landing {
+    --bg: #131416;
+    --bg-card: #1a1c1e;
+    --text: #e9e9e9;
+    --text-muted: #a0a6ae;
+    --border: #2a2d31;
+}
+
+.kinetis-landing * {
+    box-sizing: border-box;
+}
+
+.kinetis-landing {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.kinetis-landing .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 3rem;
+}
+
+/* Hero */
+
+.kinetis-landing .hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.kinetis-landing .logo {
+    width: 140px;
+    aspect-ratio: 400 / 420;
+    margin: 0 auto 1.5rem;
+    background-image: url('logo.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.kinetis-landing .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.kinetis-landing .hero p.tagline {
+    margin: 1.5rem auto 2rem;
+    max-width: 520px;
+    color: var(--amber);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Calls to action (404 page) */
+
+.kinetis-landing .cta {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.kinetis-landing .button {
+    display: inline-block;
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.kinetis-landing .button.primary {
+    background: var(--amber);
+    color: #ffffff;
+}
+
+.kinetis-landing .button.primary:hover {
+    background: var(--amber-light);
+}
+
+.kinetis-landing .button.secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.kinetis-landing .button.secondary:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+}
+
+/* Features */
+
+.kinetis-landing .features {
+    margin-top: 3.5rem;
+    margin-bottom: 3rem;
+}
+
+.kinetis-landing .features h2 {
+    text-align: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 1.75rem;
+}
+
+.kinetis-landing .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 760px) {
+    .kinetis-landing .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .kinetis-landing .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kinetis-landing .feature {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.kinetis-landing .feature:hover {
+    border-color: var(--amber);
+}
+
+.kinetis-landing .feature h3 {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+    color: var(--amber);
+}
+
+.kinetis-landing .feature p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.kinetis-landing .feature p code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    background: var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+}
+
+/* Tiles */
+
+.kinetis-landing .tiles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 560px) {
+    .kinetis-landing .tiles {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kinetis-landing .tile {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.kinetis-landing .tile:hover {
+    border-color: var(--amber);
+}
+
+.kinetis-landing .tile h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    color: var(--amber);
+}
+
+.kinetis-landing .tile p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.kinetis-landing .tile .arrow {
+    color: var(--amber);
+}
+
+/* Footer */
+
+.kinetis-landing footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.kinetis-landing footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.kinetis-landing footer a:hover {
+    color: var(--amber);
+}
+
+.kinetis-landing footer .sep {
+    margin: 0 0.5rem;
+}
+
+.kinetis-landing .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 0.6rem;
+}

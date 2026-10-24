@@ -1,0 +1,9 @@
+# The sample website's own extensions; the theme itself depends on none of
+# them. CI installs the theme wheel separately, with the [blog,notfound]
+# extras, and these exact pins sit inside the extras' ranges.
+# Pinned exactly so an upstream release cannot change the assertions.
+myst-parser==5.1.0
+sphinxext-opengraph==0.13.0
+sphinx-sitemap==2.9.0
+ablog==0.11.13
+sphinx-notfound-page==1.1.0

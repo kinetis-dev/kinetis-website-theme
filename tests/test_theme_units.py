@@ -59,12 +59,14 @@ class DefaultsTest(unittest.TestCase):
         self.assertEqual(["theme-switcher"], config.html_theme_options["navbar_end"])
 
     def test_consumer_keys_win_and_the_dict_is_updated_in_place(self):
-        options = {"navbar_end": ["theme-switcher"], "show_toc_level": 3}
+        # Values that differ from the defaults, so only a consumer win passes.
+        options = {"navbar_end": ["theme-switcher", "navbar-icon-links"], "show_toc_level": 3}
         config = self.config(html_theme_options=options)
         config.html_sidebars = {"**": ["mine.html"]}
         theme.apply_defaults(None, config)
         self.assertIs(options, config.html_theme_options)
-        self.assertEqual(["theme-switcher"], options["navbar_end"])
+        self.assertNotEqual(theme.THEME_OPTION_DEFAULTS["navbar_end"], options["navbar_end"])
+        self.assertEqual(["theme-switcher", "navbar-icon-links"], options["navbar_end"])
         self.assertEqual(3, options["show_toc_level"])
         self.assertEqual(["kinetis-nav"], options["navbar_center"])
         self.assertEqual({"**": ["mine.html"]}, config.html_sidebars)

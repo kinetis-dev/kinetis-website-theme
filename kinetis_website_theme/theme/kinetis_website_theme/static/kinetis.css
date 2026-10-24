@@ -78,3 +78,53 @@ article table.docutils {
 .kinetis-footer .sep {
     margin: 0 0.5rem;
 }
+
+/* ABlog, for the website's blog. ablog renders on pydata as it is; these
+   rules only keep its post headers and sidebar blocks on the theme's tokens,
+   so they read the same in light and dark. Sizes are pydata's own sidebar
+   tokens. */
+
+/* Post entries, in {postlist} and on the listing pages: the date and the
+   metadata line muted, the title link in the link colour. */
+.ablog-post .ablog-post-title {
+    color: var(--pst-color-text-muted);
+}
+
+.ablog-post .ablog-archive {
+    padding-left: 0;
+    list-style: none;
+    color: var(--pst-color-text-muted);
+    font-size: var(--pst-sidebar-font-size);
+}
+
+.ablog-post .ablog-archive li,
+.ablog-post .ablog-archive .ablog-sidebar-item {
+    display: inline;
+}
+
+.ablog-post .ablog-archive li + li,
+.ablog-post .ablog-archive .ablog-sidebar-item li {
+    margin-left: 0.5rem;
+}
+
+/* Sidebar blocks (ablog/postcard.html, recentposts.html, tagcloud.html,
+   categories.html, archives.html): headings at the sidebar header size
+   rather than h2/h3 size, lists without bullets. */
+.bd-sidebar .ablog-sidebar-item h2,
+.bd-sidebar .ablog-sidebar-item h3 {
+    margin: 0 0 0.5rem;
+    color: var(--pst-color-text-base);
+    font-size: var(--pst-sidebar-header-font-size);
+    font-weight: var(--pst-sidebar-header-font-weight);
+}
+
+.bd-sidebar .ablog-sidebar-item ul {
+    padding-left: 0;
+    list-style: none;
+    font-size: var(--pst-sidebar-font-size);
+}
+
+.ablog-sidebar-item .fa,
+.ablog-post .fa {
+    color: var(--pst-color-text-muted);
+}

@@ -34,12 +34,14 @@ jobs:
         run: |
           pip install -q build
           python -m build --wheel --sdist
-      - name: Install the wheel with both extras, plus the sample site's extensions
+      - name: Install the wheel with both extras, plus both sample projects' extensions
         run: |
           wheel="$(ls dist/*.whl)"
-          pip install -q "${wheel}[blog,notfound]" -r tests/sample-site/requirements.txt
+          pip install -q "${wheel}[blog,notfound]" -r tests/sample-site/requirements.txt -r tests/sample-website/requirements.txt
       - name: Build the sample site
         run: sphinx-build -W --keep-going -b html tests/sample-site _build
+      - name: Build the sample website
+        run: sphinx-build -W --keep-going -b html tests/sample-website build/website
       - name: URL-baseline guard
         run: python tools/check_url_baseline.py check _build
       - name: Unit and assertion tests

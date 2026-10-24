@@ -1,0 +1,28 @@
+{%- extends "layout.html" %}
+
+{#- The full-page landing template, selected by front matter
+   `kinetis_template: landing` (kinetis_website_theme.landing_page_context).
+   It keeps everything layout.html gives a docs page in <head> (favicons,
+   noindex) and pydata's header, its <main id="main-content"> landmark and
+   skip link, and renders the page body inside .kinetis-landing in place of
+   the article, sidebars, prev/next and footers. The body carries its own
+   footer. kinetis-landing.css is linked on these pages only. #}
+
+{#- The page title verbatim, never with a " - Project" suffix. #}
+{%- block htmltitle %}
+    <title>{{ title|striptags|e }}</title>
+{%- endblock %}
+
+{#- The slim header bar (design 2.5): pydata's 4rem header at 3rem. #}
+{%- block extrahead %}
+  {{- super() }}
+<style>html { --pst-header-height: 3rem; }</style>
+{%- endblock extrahead %}
+
+{% block docs_main %}
+        <div class="kinetis-landing" data-pagefind-body>
+          {{ body }}
+        </div>
+{% endblock docs_main %}
+
+{%- block footer %}{%- endblock footer %}

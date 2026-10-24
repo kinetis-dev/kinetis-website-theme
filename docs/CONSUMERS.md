@@ -17,6 +17,40 @@ The pin line:
 kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/vX.Y.Z/kinetis_website_theme-X.Y.Z-py3-none-any.whl
 ```
 
+The website pins the same URL with the extras, which pull in ABlog and
+sphinx-notfound-page (`ablog>=0.11,<0.12`, `sphinx-notfound-page>=1.0,<2`):
+
+```
+kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/vX.Y.Z/kinetis_website_theme-X.Y.Z-py3-none-any.whl
+```
+
+## What the website sets (0.2.0 and later)
+
+The docs consumers set only `html_theme`. The website also uses the options
+below; the README has the details, and `tests/sample-website/` is a working
+project that phase 5b can copy.
+
+- `kinetis_index_as_directory = True`: the canonical URL and `og:url` of
+  `index` pages end at the directory (`https://kinetis.dev/`,
+  `https://kinetis.dev/blog/`), and so do their sitemap locs when the pruner
+  is on. An `og:url` in front matter wins.
+- `kinetis_prune_sitemap = True`: noindex pages are dropped from the
+  sitemap. It needs `sitemap_url_scheme = "{link}"`. The file name comes
+  from `sitemap_filename`, which sphinx-sitemap 2.9.0 supports, so
+  `sitemap_filename = "main-sitemap.xml"` works.
+- `kinetis_noindex_patterns`: the ablog listings. ablog 0.11 writes its root
+  listing of all posts at `blog.html` (pattern `blog`), and each year's
+  archive at `blog/<year>.html` (pattern `blog/[0-9][0-9][0-9][0-9]`), next
+  to `blog/tag*`, `blog/category*`, `blog/archive*`, `blog/author*`,
+  `blog/language*`, `blog/location*` and `blog/drafts`. Its Atom feed is
+  `blog/atom.xml`.
+- Front matter `kinetis_template: landing` renders a page with the landing
+  template, and `kinetis_noindex: true` marks a page noindex.
+- Page titles without a heading use the `{title}` directive, not a
+  front-matter `title:` key (MyST does not make that the document title).
+- `404.md` uses `orphan: true` and `kinetis_template: landing`, and conf
+  enables `notfound.extension` with `notfound_urls_prefix = "/"`.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
