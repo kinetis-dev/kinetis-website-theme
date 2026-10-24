@@ -49,6 +49,7 @@ class ActiveSectionTest(unittest.TestCase):
         # match, /vector/ and an added /vector/docs/; the longer one wins in
         # either order, and Vector still owns the page with NAV as shipped.
         self.assertEqual("Vector", active_section("/vector/docs/x.html"))
+        self.assertEqual("Vector", active_section("/vector/x.html"))
         self.assertNotEqual("Home", active_section("/docs/x.html"))
         for items in (
             (Item("Vector", "/vector/"), Item("Vector docs", "/vector/docs/")),
