@@ -1,0 +1,56 @@
+{
+ "404.html": [
+  "page-not-found"
+ ],
+ "agents.html": [
+  "ai-agents",
+  "overview"
+ ],
+ "auth.html": [
+  "authentication",
+  "overview"
+ ],
+ "genindex.html": [
+  "index"
+ ],
+ "guide.html": [
+  "configuration-guide",
+  "configuration-reference",
+  "environment-variables"
+ ],
+ "index.html": [
+  "kinetis",
+  "what-this-site-checks"
+ ],
+ "internal.html": [
+  "internal-notes"
+ ],
+ "logging.html": [
+  "logging",
+  "overview"
+ ],
+ "persistence.html": [
+  "overview",
+  "persistence"
+ ],
+ "queue.html": [
+  "overview",
+  "queues-retries"
+ ],
+ "reference.html": [
+  "the-kinetis-reference"
+ ],
+ "runtime.html": [
+  "overview",
+  "runtime-adapters"
+ ],
+ "search.html": [],
+ "storage.html": [
+  "overview",
+  "storage"
+ ],
+ "tutorial.html": [
+  "first-steps",
+  "tutorial"
+ ]
+}

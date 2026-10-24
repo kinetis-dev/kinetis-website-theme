@@ -1,0 +1,8 @@
+# The sample site's own content extensions; the theme itself depends on none
+# of them. CI installs the theme wheel separately (dist/*.whl).
+# Pinned exactly: the baseline records their output (heading ids, the
+# og/description meta), so an upstream release must not fail the guard
+# self-test. Bump together with a baseline re-capture.
+myst-parser==5.1.0
+sphinxext-opengraph==0.13.0
+sphinx-sitemap==2.9.0

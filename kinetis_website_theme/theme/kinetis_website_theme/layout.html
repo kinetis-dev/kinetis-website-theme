@@ -1,0 +1,56 @@
+{%- extends "pydata_sphinx_theme/layout.html" %}
+
+{#- Furo's <title> logic (furo/theme/furo/base.html, genindex.html and
+   search.html), reproduced filter for filter so the frozen meta.json titles
+   stay byte-identical: "Page - Kinetis" with a hyphen-minus, and just
+   "Kinetis" on the root document. pydata's default would be "Page — Kinetis". #}
+{%- block htmltitle %}
+  {%- if not docstitle %}
+    <title>{{ title|striptags|e }}</title>
+  {%- elif pagename == master_doc %}
+    <title>{{ docstitle|striptags|e }}</title>
+  {%- elif pagename == "genindex" %}
+    <title>{{ _("Index") }} - {{ docstitle|striptags|e }}</title>
+  {%- elif pagename == "search" %}
+    <title>{{ _("Search") }} - {{ docstitle }}</title>
+  {%- else %}
+    <title>{{ title|striptags|e }} - {{ docstitle|striptags|e }}</title>
+  {%- endif %}
+{%- endblock %}
+
+{#- The favicons are kinetis-website's own /assets/ files, outside every docs
+   build, so they are linked site-root-relative exactly as the Furo-era
+   page.html did. html_favicon stays unset: Sphinx would emit a
+   page-relative link to a file the build ships. #}
+{%- block extrahead %}
+  {{- super() }}
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" href="/assets/favicon.ico" sizes="256x256">
+<link rel="apple-touch-icon" href="/assets/favicon.png" sizes="256x256">
+  {%- if kinetis_noindex %}
+<meta name="robots" content="noindex">
+  {%- endif %}
+{%- endblock extrahead %}
+
+{#- data-pagefind-* mark the indexable body for a later site-wide search. #}
+{% block docs_navbar %}
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none" data-pagefind-ignore>
+      {%- include "sections/header.html" %}
+    </header>
+{% endblock docs_navbar %}
+
+{#- role="main" on the article, as Furo had it: the URL-baseline guard reads
+   anchors from <article role="main">, and consumer CSS selects on it. #}
+{% block docs_body %}
+                {% include "components/searchbox.html" %}
+                <article class="bd-article" role="main" data-pagefind-body>
+                  {% block body %}{% endblock %}
+                </article>
+{% endblock docs_body %}
+
+{% block docs_toc %}
+              {% if not remove_sidebar_secondary %}
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc" data-pagefind-ignore>{% include "sections/sidebar-secondary.html" %}</div>
+              {% endif %}
+{% endblock docs_toc %}

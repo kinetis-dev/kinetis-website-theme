@@ -1,0 +1,3 @@
+# <path> <keep|remove-pending|remove>
+# keep: must be present. remove: must be absent. remove-pending: may be present.
+# The sample site ships no html_extra_path files.

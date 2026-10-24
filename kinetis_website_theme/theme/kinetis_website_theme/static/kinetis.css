@@ -1,0 +1,80 @@
+/* kinetis.dev on pydata-sphinx-theme. Loaded after pydata's stylesheet
+   (app.add_css_file), so the same selectors win.
+
+   Colour tokens are the literal kinetis.dev values: amber is the Furo
+   color-brand-* both docs conf.py files set (and style.css --amber); the
+   rest are kinetis-website's style.css tokens, whose dark set is Furo's own
+   dark palette. pydata stamps a resolved data-theme on <html>, so dark mode
+   keys off html[data-theme="dark"], never prefers-color-scheme. */
+
+html[data-theme="light"] {
+    --pst-color-primary: #D97706;
+    --pst-color-link: #D97706;
+    --pst-color-link-hover: #D97706;
+    /* Amber too, so pydata's active-TOC marker adds no new accent. */
+    --pst-color-secondary: #D97706;
+    --pst-color-background: #ffffff;
+    --pst-color-surface: #f8f9fb;
+    --pst-color-on-background: #f8f9fb;
+    --pst-color-text-base: #1a1c1e;
+    --pst-color-text-muted: #52585f;
+    --pst-color-border: #e0e2e6;
+    /* Furo's inline code is neutral, not pydata's pink. */
+    --pst-color-inline-code: var(--pst-color-text-base);
+}
+
+html[data-theme="dark"] {
+    --pst-color-primary: #D97706;
+    --pst-color-link: #D97706;
+    --pst-color-link-hover: #D97706;
+    --pst-color-secondary: #D97706;
+    --pst-color-background: #131416;
+    --pst-color-surface: #1a1c1e;
+    --pst-color-on-background: #1a1c1e;
+    --pst-color-text-base: #e9e9e9;
+    --pst-color-text-muted: #a0a6ae;
+    --pst-color-border: #2a2d31;
+    --pst-color-inline-code: var(--pst-color-text-base);
+}
+
+/* Page headings use the logo's own palette: the K monogram's red for the
+   page title, the wordmark's amber for every heading below it. Scoped to
+   the content area so the sidebar's navigation tree is untouched. */
+article[role="main"] h1 {
+    color: #DC2626;
+}
+
+article[role="main"] h2,
+article[role="main"] h3,
+article[role="main"] h4,
+article[role="main"] h5,
+article[role="main"] h6 {
+    color: #F59E0B;
+}
+
+/* Content tables: full width and left-aligned, not centred at their
+   natural width. */
+article table.docutils {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Site navigation and footer. */
+.kinetis-footer {
+    margin: 0;
+    color: var(--pst-color-text-muted);
+}
+
+.kinetis-footer a {
+    color: var(--pst-color-text-muted);
+    text-decoration: none;
+}
+
+.kinetis-footer a:hover {
+    color: var(--pst-color-primary);
+}
+
+.kinetis-footer .sep {
+    margin: 0 0.5rem;
+}

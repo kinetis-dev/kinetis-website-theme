@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kinetis-website-theme"
+version = "0.1.0"
+description = "The shared Sphinx theme for kinetis.dev, built on pydata-sphinx-theme."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+classifiers = [
+    "Framework :: Sphinx :: Theme",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    # The only place the pydata version is chosen; consumers inherit it.
+    "pydata-sphinx-theme==0.23.0",
+    "sphinx>=8.0,<9",
+]
+
+[project.optional-dependencies]
+blog = ["ablog>=0.11,<0.12"]
+notfound = ["sphinx-notfound-page>=1.0,<2"]
+
+[project.urls]
+Homepage = "https://kinetis.dev/"
+Source = "https://github.com/kinetis-dev/kinetis-website-theme"
+
+[project.entry-points."sphinx.html_themes"]
+kinetis_website_theme = "kinetis_website_theme"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kinetis_website_theme"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "kinetis_website_theme",
+    "tests",
+    "tools",
+    "docs",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE",
+]
+exclude = ["tests/goldens/*-actual.png", "tests/goldens/*-diff.png"]

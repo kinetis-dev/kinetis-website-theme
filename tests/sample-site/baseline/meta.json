@@ -1,0 +1,130 @@
+{
+ "pages": {
+  "404.html": {
+   "canonical": "https://kinetis.dev/docs/404.html",
+   "description": "The page you asked for does not exist.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/404.html",
+   "title": "Page not found - Kinetis"
+  },
+  "agents.html": {
+   "canonical": "https://kinetis.dev/docs/agents.html",
+   "description": "A placeholder page for the AI agents group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/agents.html",
+   "title": "AI agents - Kinetis"
+  },
+  "auth.html": {
+   "canonical": "https://kinetis.dev/docs/auth.html",
+   "description": "A placeholder page for the Authentication group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/auth.html",
+   "title": "Authentication - Kinetis"
+  },
+  "genindex.html": {
+   "canonical": "https://kinetis.dev/docs/genindex.html",
+   "description": null,
+   "og:image": null,
+   "og:url": null,
+   "title": "Index - Kinetis"
+  },
+  "guide.html": {
+   "canonical": "https://kinetis.dev/docs/guide.html",
+   "description": "A placeholder page with a table and in-page anchors. Configuration reference:,,, Option, Default, Meaning,,, debug, false, Verbose error pages,, workers, 4, Worker processes,,,, See the reference a...",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/guide.html",
+   "title": "Configuration guide - Kinetis"
+  },
+  "index.html": {
+   "canonical": "https://kinetis.dev/docs/index.html",
+   "description": "Sample home page for the kinetis-website-theme test site. The toctrees below mirror the captioned groups of the Kinetis documentation home page. What this site checks: The theme’s navbar, footer, s...",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/index.html",
+   "title": "Kinetis"
+  },
+  "internal.html": {
+   "canonical": "https://kinetis.dev/docs/internal.html",
+   "description": "A page kept out of search engines with front matter kinetis_noindex: true.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/internal.html",
+   "title": "Internal notes - Kinetis"
+  },
+  "logging.html": {
+   "canonical": "https://kinetis.dev/docs/logging.html",
+   "description": "A placeholder page for the Logging group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/logging.html",
+   "title": "Logging - Kinetis"
+  },
+  "persistence.html": {
+   "canonical": "https://kinetis.dev/docs/persistence.html",
+   "description": "A placeholder page for the Persistence group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/persistence.html",
+   "title": "Persistence - Kinetis"
+  },
+  "queue.html": {
+   "canonical": "https://kinetis.dev/docs/queue.html",
+   "description": "A placeholder page for the Background work group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/queue.html",
+   "title": "Queues & retries - Kinetis"
+  },
+  "reference.html": {
+   "canonical": "https://kinetis.dev/docs/reference.html",
+   "description": "A placeholder reference page.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/reference.html",
+   "title": "The kinetis reference - Kinetis"
+  },
+  "runtime.html": {
+   "canonical": "https://kinetis.dev/docs/runtime.html",
+   "description": "A placeholder page for the Runtime adapters group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/runtime.html",
+   "title": "Runtime adapters - Kinetis"
+  },
+  "search.html": {
+   "canonical": "https://kinetis.dev/docs/search.html",
+   "description": null,
+   "og:image": null,
+   "og:url": null,
+   "title": "Search - Kinetis"
+  },
+  "storage.html": {
+   "canonical": "https://kinetis.dev/docs/storage.html",
+   "description": "A placeholder page for the Storage group. Overview: Placeholder text.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/storage.html",
+   "title": "Storage - Kinetis"
+  },
+  "tutorial.html": {
+   "canonical": "https://kinetis.dev/docs/tutorial.html",
+   "description": "A placeholder tutorial page. First steps: Install the package, then build the docs.",
+   "og:image": null,
+   "og:url": "https://kinetis.dev/docs/tutorial.html",
+   "title": "Tutorial - Kinetis"
+  }
+ },
+ "sitemap": {
+  "excluded": [
+   "404.html"
+  ],
+  "locs": [
+   "https://kinetis.dev/docs/agents.html",
+   "https://kinetis.dev/docs/auth.html",
+   "https://kinetis.dev/docs/genindex.html",
+   "https://kinetis.dev/docs/guide.html",
+   "https://kinetis.dev/docs/index.html",
+   "https://kinetis.dev/docs/internal.html",
+   "https://kinetis.dev/docs/logging.html",
+   "https://kinetis.dev/docs/persistence.html",
+   "https://kinetis.dev/docs/queue.html",
+   "https://kinetis.dev/docs/reference.html",
+   "https://kinetis.dev/docs/runtime.html",
+   "https://kinetis.dev/docs/search.html",
+   "https://kinetis.dev/docs/storage.html",
+   "https://kinetis.dev/docs/tutorial.html"
+  ]
+ }
+}

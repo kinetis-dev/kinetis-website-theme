@@ -1,0 +1,108 @@
+"""Unit tests for nav.py and the theme's config and page-context helpers."""
+
+import tomllib
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+
+import kinetis_website_theme as theme
+from kinetis_website_theme.nav import NAV, active_section
+
+REPO = Path(__file__).resolve().parents[1]
+
+
+class ActiveSectionTest(unittest.TestCase):
+    def test_nav_items_and_order(self):
+        self.assertEqual(
+            [("Home", "/"), ("Docs", "/docs/"), ("Vector", "/vector/docs/")],
+            [tuple(item) for item in NAV],
+        )
+
+    def test_docs_pages_are_docs(self):
+        for path in ("/docs/", "/docs/index.html", "/docs/guide.html", "/docs/genindex.html"):
+            self.assertEqual("Docs", active_section(path), path)
+
+    def test_vector_pages_are_vector(self):
+        for path in ("/vector/docs/", "/vector/docs/index.html", "/vector/docs/install.html"):
+            self.assertEqual("Vector", active_section(path), path)
+
+    def test_root_is_home_and_only_the_root(self):
+        self.assertEqual("Home", active_section("/"))
+        self.assertEqual("Home", active_section("/index.html"))
+        for path in ("/about.html", "/blog/", "/docs-old/x.html", "/vector/", "/vector/index.html"):
+            self.assertIsNone(active_section(path), path)
+
+    def test_longest_prefix_wins(self):
+        # /vector/docs/ is under no other item today; the rule must still hold
+        # when Vector moves to /vector/ and a page sits under both.
+        self.assertEqual("Vector", active_section("/vector/docs/x.html"))
+        self.assertNotEqual("Home", active_section("/docs/x.html"))
+
+    def test_url_path_is_baseurl_path_plus_pagename(self):
+        self.assertEqual("/docs/guide.html", theme.page_url_path("https://kinetis.dev/docs/", "guide"))
+        self.assertEqual("/vector/docs/a/b.html", theme.page_url_path("https://kinetis.dev/vector/docs/", "a/b"))
+        self.assertEqual("/index.html", theme.page_url_path("https://kinetis.dev/", "index"))
+
+
+class DefaultsTest(unittest.TestCase):
+    def config(self, **values):
+        return SimpleNamespace(html_theme_options=values.pop("html_theme_options", {}), html_sidebars={}, **values)
+
+    def test_empty_config_gets_every_default(self):
+        config = self.config()
+        theme.apply_defaults(None, config)
+        self.assertEqual(theme.THEME_OPTION_DEFAULTS, config.html_theme_options)
+        self.assertEqual({"**": ["kinetis-sidebar-nav"]}, config.html_sidebars)
+        self.assertIs(False, config.html_theme_options["navigation_with_keys"])
+        self.assertEqual("https://github.com/kinetis-dev", config.html_theme_options["icon_links"][0]["url"])
+
+    def test_consumer_keys_win_and_the_dict_is_updated_in_place(self):
+        options = {"navbar_end": ["theme-switcher"], "show_toc_level": 3}
+        config = self.config(html_theme_options=options)
+        config.html_sidebars = {"**": ["mine.html"]}
+        theme.apply_defaults(None, config)
+        self.assertIs(options, config.html_theme_options)
+        self.assertEqual(["theme-switcher"], options["navbar_end"])
+        self.assertEqual(3, options["show_toc_level"])
+        self.assertEqual(["kinetis-nav"], options["navbar_center"])
+        self.assertEqual({"**": ["mine.html"]}, config.html_sidebars)
+
+    def test_defaults_are_not_shared_between_builds(self):
+        first, second = self.config(), self.config()
+        theme.apply_defaults(None, first)
+        first.html_theme_options["icon_links"].append({"name": "x"})
+        theme.apply_defaults(None, second)
+        self.assertEqual(1, len(second.html_theme_options["icon_links"]))
+
+    def test_pygments_pair_is_furos(self):
+        options = theme.THEME_OPTION_DEFAULTS
+        self.assertEqual(("a11y-light", "native"), (options["pygments_light_style"], options["pygments_dark_style"]))
+
+
+class NoindexTest(unittest.TestCase):
+    def test_404_is_noindex(self):
+        self.assertTrue(theme.is_noindex("404", {}, []))
+
+    def test_front_matter(self):
+        self.assertTrue(theme.is_noindex("notes", {"kinetis_noindex": "true"}, []))
+        self.assertTrue(theme.is_noindex("notes", {"kinetis_noindex": True}, []))
+        self.assertFalse(theme.is_noindex("notes", {"kinetis_noindex": "false"}, []))
+
+    def test_patterns_are_fnmatch_on_docnames(self):
+        patterns = ["blog/tag*", "drafts"]
+        self.assertTrue(theme.is_noindex("blog/tag/php", {}, patterns))
+        self.assertTrue(theme.is_noindex("drafts", {}, patterns))
+        self.assertFalse(theme.is_noindex("blog/posts/hello", {}, patterns))
+
+    def test_ordinary_page_is_indexed(self):
+        self.assertFalse(theme.is_noindex("guide", {"title": "Guide"}, []))
+
+
+class VersionTest(unittest.TestCase):
+    def test_module_version_matches_pyproject(self):
+        with open(REPO / "pyproject.toml", "rb") as f:
+            self.assertEqual(tomllib.load(f)["project"]["version"], theme.__version__)
+
+
+if __name__ == "__main__":
+    unittest.main()

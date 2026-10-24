@@ -1,0 +1,18 @@
+{#- The project's whole toctree, as Furo's sidebar/navigation.html shows it:
+   every captioned group with its pages, .current on the open page.
+   startdepth=0 makes pydata return the global toctree rather than the
+   subtree under the current top-level page. #}
+<nav class="bd-docs-nav bd-links kinetis-sidebar-nav" aria-label="{{ _('Section Navigation') }}" data-pagefind-ignore>
+  <div class="bd-toc-item navbar-nav">
+    {{- generate_toctree_html(
+      "sidebar",
+      startdepth=0,
+      show_nav_level=theme_show_nav_level | int,
+      maxdepth=theme_navigation_depth | int,
+      collapse=False,
+      includehidden=True,
+      titles_only=True
+      )
+    -}}
+  </div>
+</nav>

@@ -1,0 +1,12 @@
+{#- The kinetis.dev site navigation (kinetis_website_theme/nav.py). Hrefs are
+   absolute paths, so they resolve the same from every section and the 404
+   page; kinetis_active is computed from the deployed path of this page. #}
+<nav class="kinetis-nav" aria-label="Site">
+  <ul class="bd-navbar-elements navbar-nav">
+    {%- for item in kinetis_nav %}
+    <li class="nav-item{% if item.active %} current active{% endif %}">
+      <a class="nav-link nav-internal{% if item.active %} active{% endif %}" href="{{ item.href }}"{% if item.active %} aria-current="page"{% endif %}>{{ item.label }}</a>
+    </li>
+    {%- endfor %}
+  </ul>
+</nav>

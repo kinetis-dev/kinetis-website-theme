@@ -1,0 +1,3 @@
+# Pages and anchors the guard self-test treats as linked from other sites.
+index.html
+guide.html#configuration-reference
