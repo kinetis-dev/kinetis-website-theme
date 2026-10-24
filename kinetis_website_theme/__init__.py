@@ -20,7 +20,7 @@ from sphinx.util import logging
 
 from .nav import NAV, active_section
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 logger = logging.getLogger(__name__)
 

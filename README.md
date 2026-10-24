@@ -16,14 +16,14 @@ adding a navbar and footer that all three properties share.
 Pin the release in the consumer's `requirements.txt`, replacing `furo`:
 
 ```
-kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.3.1/kinetis_website_theme-0.3.1-py3-none-any.whl
+kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.4.0/kinetis_website_theme-0.4.0-py3-none-any.whl
 ```
 
 The website, which needs ABlog and the 404 page, adds the extras (pip
 accepts extras on a direct-URL requirement):
 
 ```
-kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.3.1/kinetis_website_theme-0.3.1-py3-none-any.whl
+kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.4.0/kinetis_website_theme-0.4.0-py3-none-any.whl
 ```
 
 pip downloads only the theme from that URL and resolves its dependencies
@@ -37,7 +37,7 @@ html_theme = "kinetis_website_theme"
 That is all a consumer sets. The theme supplies the rest:
 
 - The navbar: the horizontal Kinetis logo (`logo-h.svg`) linking to `https://kinetis.dev/`, the site
-  navigation (Home `/`, Docs `/docs/`, Vector `/vector/`, Blog `/blog/`)
+  navigation (Home `/`, Docs `/docs/`, Vector `/vector/docs/`, Blog `/blog/`)
   with the current section marked, search and the light/dark switcher. It
   has no GitHub icon (`icon_links` is empty). The section is the item whose
   href is the longest prefix of the page's deployed path (Home only for the

@@ -61,12 +61,20 @@ element from the bodies of its three landing pages, `/`, `/404` and
 `/vector/`. A body that keeps one shows two footers. The docs consumers have
 no landing pages and change nothing but the pin.
 
+## Adopting 0.4.0
+
+The Vector nav item links to `/vector/docs/` (was `/vector/`). It is a pin
+bump only: no option, template or CSS changes. Bump kinetis and vector-dev
+in either order, and the website last, because the website's 0.4.0 PR also
+deletes its Vector landing page, `/vector/`. Bumped in this order, no
+section links to `/vector/` after it is gone.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
 
 ```sh
-python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.3.1
+python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.4.0
 ```
 
 It rewrites only the pin line, keeps any extras, and prints the diff. It
@@ -76,5 +84,6 @@ guard before merge, and merging to `main` redeploys that section.
 
 For releases that change the navigation, bump in this order: the website
 first, so a new nav target exists before the other sections link to it, then
-kinetis, then vector-dev. The sections show different navbars until all
-three are merged.
+kinetis, then vector-dev. A release that drops a nav target the website
+then deletes reverses this, the website last, as 0.4.0 does. The sections
+show different navbars until all three are merged.

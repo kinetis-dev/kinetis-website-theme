@@ -11,7 +11,7 @@ class Item(NamedTuple):
 NAV = (
     Item("Home", "/"),
     Item("Docs", "/docs/"),
-    Item("Vector", "/vector/"),
+    Item("Vector", "/vector/docs/"),
     Item("Blog", "/blog/"),
 )
 

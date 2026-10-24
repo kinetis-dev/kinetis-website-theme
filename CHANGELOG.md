@@ -4,6 +4,26 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.4.0
+
+The Vector nav item links to the Vector manual, `/vector/docs/`, on every
+section. The website is removing its Vector landing page, so `/vector/`
+will return 404, with no redirect. Minor under the rule above: the
+navigation changes.
+
+**Consumer impact:** none beyond the pin. No option, template or CSS
+changes. Bump kinetis and vector-dev first, in either order, and the
+website last: its 0.4.0 PR also deletes `/vector/`.
+
+Changed:
+
+- The Vector nav item links to `/vector/docs/` (was `/vector/`). Every
+  `/vector/docs/...` page stays Vector. `active_section` is unchanged, so
+  four paths that were Vector now belong to no item: `/vector/`,
+  `/vector/index.html`, `/vector/x.html` and `/vector.html`. So does any
+  other page under `/vector/` outside `/vector/docs/`. By the exact `.html`
+  rule, `/vector/docs.html` is now Vector.
+
 ## 0.3.1
 
 The primary sidebar remembers its scroll position per docs set. A patch:

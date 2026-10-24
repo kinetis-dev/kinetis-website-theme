@@ -23,7 +23,7 @@ BASEURLS = {
     "Vector": "https://kinetis.dev/vector/docs/",
     "Home": "https://kinetis.dev/",
 }
-NAV_HREFS = {"Home": "/", "Docs": "/docs/", "Vector": "/vector/", "Blog": "/blog/"}
+NAV_HREFS = {"Home": "/", "Docs": "/docs/", "Vector": "/vector/docs/", "Blog": "/blog/"}
 FAVICONS = [
     {"rel": "icon", "type": "image/svg+xml", "href": "/assets/favicon.svg"},
     {"rel": "icon", "href": "/assets/favicon.ico", "sizes": "256x256"},
@@ -210,7 +210,7 @@ class NavTest(unittest.TestCase):
         for name in pages("Docs"):
             with self.subTest(page=name):
                 raw = page("Docs", name).raw
-                self.assertEqual(2, raw.count('<a class="nav-link nav-internal" href="/vector/">Vector</a>'))
+                self.assertEqual(2, raw.count('<a class="nav-link nav-internal" href="/vector/docs/">Vector</a>'))
                 self.assertEqual(2, raw.count('<a class="nav-link nav-internal" href="/blog/">Blog</a>'))
 
     def test_brand_links_to_the_marketing_site(self):

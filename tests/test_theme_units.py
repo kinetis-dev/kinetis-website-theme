@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[1]
 class ActiveSectionTest(unittest.TestCase):
     def test_nav_items_and_order(self):
         self.assertEqual(
-            [("Home", "/"), ("Docs", "/docs/"), ("Vector", "/vector/"), ("Blog", "/blog/")],
+            [("Home", "/"), ("Docs", "/docs/"), ("Vector", "/vector/docs/"), ("Blog", "/blog/")],
             [tuple(item) for item in NAV],
         )
 
@@ -25,8 +25,7 @@ class ActiveSectionTest(unittest.TestCase):
             self.assertEqual("Docs", active_section(path), path)
 
     def test_vector_pages_are_vector(self):
-        for path in ("/vector/", "/vector/index.html", "/vector/docs/", "/vector/docs/index.html",
-                     "/vector/docs/install.html"):
+        for path in ("/vector/docs/", "/vector/docs/index.html", "/vector/docs/install.html"):
             self.assertEqual("Vector", active_section(path), path)
 
     def test_blog_pages_are_blog(self):
@@ -42,23 +41,27 @@ class ActiveSectionTest(unittest.TestCase):
         # Each non-root href without its slash plus .html is that item's page;
         # Home's href is "/", which the rule never reads as "/.html" or "/home.html".
         self.assertEqual("Docs", active_section("/docs.html"))
-        self.assertEqual("Vector", active_section("/vector.html"))
+        self.assertEqual("Vector", active_section("/vector/docs.html"))
         self.assertEqual("Blog", active_section("/blog.html"))
         for path in ("/home.html", "/.html", ".html"):
             self.assertIsNone(active_section(path), path)
 
     def test_unowned_paths_are_none(self):
         # The .html rule is exact, not a fuzzy prefix: no item owns these.
+        # Vector's href is /vector/docs/, so /vector/ and its other pages,
+        # /vector.html included, belong to no item.
         for path in ("/about.html", "/docs-old/x.html", "/blogger.html", "/vector-x/", "/vector.htm",
-                     "/docs.html/x", "/blog.html/"):
+                     "/docs.html/x", "/blog.html/", "/vector/", "/vector/index.html", "/vector/x.html",
+                     "/vector.html"):
             self.assertIsNone(active_section(path), path)
 
     def test_longest_prefix_wins(self):
-        # /vector/docs/x.html is under both /vector/-prefixed hrefs it could
-        # match, /vector/ and an added /vector/docs/; the longer one wins in
-        # either order, and Vector still owns the page with NAV as shipped.
+        # With NAV as shipped, Vector's href is /vector/docs/: it owns
+        # /vector/docs/x.html and no item owns /vector/x.html. With a mocked
+        # NAV holding both /vector/ and /vector/docs/, /vector/docs/x.html is
+        # under both; the longer href wins in either order.
         self.assertEqual("Vector", active_section("/vector/docs/x.html"))
-        self.assertEqual("Vector", active_section("/vector/x.html"))
+        self.assertIsNone(active_section("/vector/x.html"))
         self.assertNotEqual("Home", active_section("/docs/x.html"))
         for items in (
             (Item("Vector", "/vector/"), Item("Vector docs", "/vector/docs/")),
