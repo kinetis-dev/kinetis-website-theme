@@ -65,7 +65,8 @@ ABLOG_PARALLEL_WARNINGS = [
 
 def sphinx(src, out, *options, cwd, strict=True, fresh=True):
     return subprocess.run(
-        [sys.executable, "-m", "sphinx", *(["-W"] if strict else []), "--keep-going", *(["-E"] if fresh else []),
+        # -N: CI forces colour, and ANSI codes would break the exact warning match.
+        [sys.executable, "-m", "sphinx", "-N", *(["-W"] if strict else []), "--keep-going", *(["-E"] if fresh else []),
          "-b", "html", *options, str(src), str(out)],
         # Outside the repo, so `python -m` imports the installed theme, not ./kinetis_website_theme.
         capture_output=True, text=True, cwd=cwd,
