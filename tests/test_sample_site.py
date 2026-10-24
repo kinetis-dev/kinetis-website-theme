@@ -149,7 +149,7 @@ class BuildTest(unittest.TestCase):
 
     def test_theme_static_files_are_shipped(self):
         static = BUILDS["Docs"] / "_static"
-        for name in ("kinetis.css", "logo.svg"):
+        for name in ("kinetis.css", "logo.svg", "logo-h.svg"):
             self.assertTrue((static / name).is_file(), name)
         self.assertIn('href="_static/kinetis.css', page("Docs", "guide.html").raw)
 
@@ -186,6 +186,7 @@ class NavTest(unittest.TestCase):
 
     def test_brand_links_to_the_marketing_site(self):
         self.assertIn('<a class="navbar-brand logo" href="https://kinetis.dev/"', page("Docs", "guide.html").raw)
+        self.assertIn('src="_static/logo-h.svg"', page("Docs", "guide.html").raw)
 
     def test_github_links_go_to_the_org(self):
         for section in BUILDS:

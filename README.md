@@ -35,7 +35,7 @@ html_theme = "kinetis_website_theme"
 
 That is all a consumer sets. The theme supplies the rest:
 
-- The navbar: the Kinetis logo linking to `https://kinetis.dev/`, the site
+- The navbar: the horizontal Kinetis logo (`logo-h.svg`) linking to `https://kinetis.dev/`, the site
   navigation (Home, Docs, Vector) with the current section marked, search,
   the light/dark switcher and the GitHub link to `https://github.com/kinetis-dev`.
 - The primary sidebar shows the project's whole toctree with its captions, as

@@ -18,10 +18,11 @@ THEME_PATH = Path(__file__).parent / "theme" / "kinetis_website_theme"
 # Applied to html_theme_options key by key, only where the consumer set nothing.
 THEME_OPTION_DEFAULTS = {
     # Bundled theme static; the brand links to the marketing site, as the
-    # Furo sidebar/brand.html override did.
+    # Furo sidebar/brand.html override did. logo-h.svg is the horizontal
+    # lockup of logo.svg, legible at navbar height.
     "logo": {
-        "image_light": "logo.svg",
-        "image_dark": "logo.svg",
+        "image_light": "logo-h.svg",
+        "image_dark": "logo-h.svg",
         "link": "https://kinetis.dev/",
         "alt_text": "Kinetis",
     },

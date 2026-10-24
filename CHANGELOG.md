@@ -12,7 +12,8 @@ First release. No consumer uses it yet.
   `sphinx>=8.0,<9`. Extras `blog` (`ablog>=0.11,<0.12`) and `notfound`
   (`sphinx-notfound-page>=1.0,<2`) are declared for the website.
 - Defaults merged into `html_theme_options` where the consumer set none:
-  - Navbar: logo to `https://kinetis.dev/`, the site nav, search, the theme
+  - Navbar: the horizontal logo `logo-h.svg` (the outline K of
+    the mark extended to KINETIS, with the comet in front of the I) to `https://kinetis.dev/`, the site nav, search, the theme
     switcher and GitHub (`https://github.com/kinetis-dev`).
   - "On this page" secondary sidebar, no breadcrumbs, no ethical-ads slot,
     prev/next links, `show_toc_level: 2` and `navigation_with_keys: False`.
