@@ -23,9 +23,9 @@ desktop browser.
 From the repository root, with Docker:
 
 ```sh
-docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright/python:v1.64.1-noble bash -c '
+docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright/python:v1.63.0-noble bash -c '
   export PIP_BREAK_SYSTEM_PACKAGES=1 &&
-  python3 -m pip install -q build playwright==1.64.1 pillow &&
+  python3 -m pip install -q build playwright==1.63.0 pillow &&
   python3 -m build --wheel --outdir /tmp/dist &&
   python3 -m pip install -q "$(ls /tmp/dist/*.whl)" -r tests/sample-site/requirements.txt &&
   cd /tmp && sphinx-build -W --keep-going -b html /work/tests/sample-site /tmp/site &&

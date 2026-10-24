@@ -31,6 +31,7 @@ FAVICONS = [
 ]
 NOINDEX_PAGES = {"internal.html", "404.html"}
 GITHUB = "https://github.com/kinetis-dev"
+PACKAGIST = "https://packagist.org/packages/kinetis/framework"
 
 BUILDS = {}
 BUILD_OUTPUT = {}
@@ -73,6 +74,7 @@ class Page(HTMLParser):
         self._nav_depth = 0
         self._nav_link = None
         self.github_links = []
+        self.packagist_links = []
         self.articles = []
         self.feed(self.raw)
         self.close()
@@ -101,6 +103,8 @@ class Page(HTMLParser):
             self.navs[-1].append(self._nav_link)
         if tag == "a" and "github.com" in a.get("href", ""):
             self.github_links.append(a["href"])
+        if tag == "a" and "packagist.org" in a.get("href", ""):
+            self.packagist_links.append(a["href"])
         if tag == "article":
             self.articles.append(a)
 
@@ -190,6 +194,12 @@ class NavTest(unittest.TestCase):
                     links = page(section, name).github_links
                     self.assertGreaterEqual(len(links), 2)  # navbar icon and footer
                     self.assertEqual({GITHUB}, set(links))
+
+    def test_packagist_link_goes_to_the_framework_package(self):
+        for section in BUILDS:
+            for name in ("index.html", "guide.html"):
+                with self.subTest(section=section, page=name):
+                    self.assertEqual([PACKAGIST], page(section, name).packagist_links)
 
     def test_sidebar_is_the_global_toctree_with_every_caption(self):
         raw = page("Docs", "guide.html").raw
