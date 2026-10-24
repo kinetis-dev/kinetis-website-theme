@@ -54,7 +54,9 @@ class DefaultsTest(unittest.TestCase):
         self.assertEqual(theme.THEME_OPTION_DEFAULTS, config.html_theme_options)
         self.assertEqual({"**": ["kinetis-sidebar-nav"]}, config.html_sidebars)
         self.assertIs(False, config.html_theme_options["navigation_with_keys"])
-        self.assertEqual("https://github.com/kinetis-dev", config.html_theme_options["icon_links"][0]["url"])
+        # No header GitHub icon: the footer carries the only GitHub link.
+        self.assertEqual([], config.html_theme_options["icon_links"])
+        self.assertEqual(["theme-switcher"], config.html_theme_options["navbar_end"])
 
     def test_consumer_keys_win_and_the_dict_is_updated_in_place(self):
         options = {"navbar_end": ["theme-switcher"], "show_toc_level": 3}
@@ -71,8 +73,11 @@ class DefaultsTest(unittest.TestCase):
         first, second = self.config(), self.config()
         theme.apply_defaults(None, first)
         first.html_theme_options["icon_links"].append({"name": "x"})
+        first.html_theme_options["logo"]["link"] = "https://example.com/"
         theme.apply_defaults(None, second)
-        self.assertEqual(1, len(second.html_theme_options["icon_links"]))
+        self.assertEqual([], second.html_theme_options["icon_links"])
+        self.assertEqual("https://kinetis.dev/", second.html_theme_options["logo"]["link"])
+        self.assertEqual([], theme.THEME_OPTION_DEFAULTS["icon_links"])
 
     def test_pygments_pair_is_furos(self):
         options = theme.THEME_OPTION_DEFAULTS

@@ -31,7 +31,8 @@ FAVICONS = [
 ]
 NOINDEX_PAGES = {"internal.html", "404.html"}
 GITHUB = "https://github.com/kinetis-dev"
-PACKAGIST = "https://packagist.org/packages/kinetis/framework"
+VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+PACKAGIST = "https://packagist.org/packages/kinetis/"
 
 BUILDS = {}
 BUILD_OUTPUT = {}
@@ -74,6 +75,8 @@ class Page(HTMLParser):
         self._nav_depth = 0
         self._nav_link = None
         self.github_links = []
+        self.header_github_links = []
+        self._header_depth = 0
         self.packagist_links = []
         self.articles = []
         self.role_main = []
@@ -94,6 +97,12 @@ class Page(HTMLParser):
             elif tag == "meta" and a.get("name") == "robots":
                 self.robots.append(a.get("content"))
             return
+        if self._header_depth and tag not in VOID_TAGS:
+            self._header_depth += 1
+        elif tag == "header" and "bd-header" in a.get("class", "").split():
+            self._header_depth = 1
+        if tag == "a" and self._header_depth and "github.com" in a.get("href", ""):
+            self.header_github_links.append(a["href"])
         if tag == "nav" and "kinetis-nav" in a.get("class", "").split():
             self._nav_depth = 1
             self.navs.append([])
@@ -112,6 +121,8 @@ class Page(HTMLParser):
             self.role_main.append((tag, a))
 
     def handle_endtag(self, tag):
+        if self._header_depth and tag not in VOID_TAGS:
+            self._header_depth -= 1
         if tag == "head":
             self.in_head = False
         elif tag == "title" and self._title is not None:
@@ -191,15 +202,24 @@ class NavTest(unittest.TestCase):
         self.assertIn('<a class="navbar-brand logo" href="https://kinetis.dev/"', page("Docs", "guide.html").raw)
         self.assertIn('src="_static/logo-h.svg"', page("Docs", "guide.html").raw)
 
-    def test_github_links_go_to_the_org(self):
+    def test_github_link_is_the_footer_one_to_the_org(self):
         for section in BUILDS:
             for name in ("index.html", "guide.html"):
                 with self.subTest(section=section, page=name):
-                    links = page(section, name).github_links
-                    self.assertGreaterEqual(len(links), 2)  # navbar icon and footer
-                    self.assertEqual({GITHUB}, set(links))
+                    parsed = page(section, name)
+                    self.assertEqual([GITHUB], parsed.github_links)  # the footer's
+                    self.assertIn(f'<a href="{GITHUB}">GitHub</a>', parsed.raw)
 
-    def test_packagist_link_goes_to_the_framework_package(self):
+    def test_header_links_nowhere_on_github(self):
+        for section in BUILDS:
+            for name in pages(section):
+                with self.subTest(section=section, page=name):
+                    parsed = page(section, name)
+                    self.assertEqual([], parsed.header_github_links)
+                    self.assertEqual(0, parsed._header_depth, "unbalanced .bd-header")
+                    self.assertNotIn("navbar-icon-links", parsed.raw)
+
+    def test_packagist_link_goes_to_the_vendor_page(self):
         for section in BUILDS:
             for name in ("index.html", "guide.html"):
                 with self.subTest(section=section, page=name):

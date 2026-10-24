@@ -29,17 +29,12 @@ THEME_OPTION_DEFAULTS = {
     "navbar_start": ["navbar-logo"],
     # Replaces pydata's toctree-driven navbar-nav.
     "navbar_center": ["kinetis-nav"],
-    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    # No navbar-icon-links: the header carries no GitHub icon (the footer
+    # links the organisation), so no empty icon container renders either.
+    "navbar_end": ["theme-switcher"],
     # Per-project Sphinx search, as Furo has today.
     "navbar_persistent": ["search-button"],
-    "icon_links": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/kinetis-dev",
-            "icon": "fa-brands fa-github",
-            "type": "fontawesome",
-        }
-    ],
+    "icon_links": [],
     # No breadcrumbs: keep the Furo look.
     "article_header_start": [],
     # Furo's right-hand "On this page"; no edit or source links.

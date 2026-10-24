@@ -36,11 +36,12 @@ html_theme = "kinetis_website_theme"
 That is all a consumer sets. The theme supplies the rest:
 
 - The navbar: the horizontal Kinetis logo (`logo-h.svg`) linking to `https://kinetis.dev/`, the site
-  navigation (Home, Docs, Vector) with the current section marked, search,
-  the light/dark switcher and the GitHub link to `https://github.com/kinetis-dev`.
+  navigation (Home, Docs, Vector) with the current section marked, search
+  and the light/dark switcher. It has no GitHub icon (`icon_links` is empty).
 - The primary sidebar shows the project's whole toctree with its captions, as
   Furo did. The secondary sidebar is "On this page".
-- The footer: copyright, Docs, GitHub and Packagist.
+- The footer: copyright, Docs, GitHub (`https://github.com/kinetis-dev`) and
+  Packagist (`https://packagist.org/packages/kinetis/`).
 - The kinetis.dev colours, the heading colours and full-width tables.
 - The three `/assets/favicon.*` links. Leave `html_favicon` unset.
 - `<title>` in Furo's format, `Page - Project` with the project name alone on
@@ -74,7 +75,7 @@ python -m unittest discover -s tests -v
 `tests/sample-site/` is a small docs project shaped like kinetis/docs.
 `tests/test_sample_site.py` builds it three times, with `html_baseurl` set to
 `/docs/`, `/vector/docs/` and `/`, and asserts on the HTML. The cases include
-the active nav item, the GitHub link, the favicons, the title format, noindex
+the active nav item, the footer links, the favicons, the title format, noindex
 and a clean `-W` build. `tools/check_url_baseline.py` is the kinetis URL
 guard, and the sample site's baseline is its self-test. Screenshot goldens are
 described in `tests/goldens/README.md`.
