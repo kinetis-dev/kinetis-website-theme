@@ -7,6 +7,11 @@
    dark palette. pydata stamps a resolved data-theme on <html>, so dark mode
    keys off html[data-theme="dark"], never prefers-color-scheme. */
 
+/* The K monogram's red: page titles and every search focus ring. */
+:root {
+    --kinetis-red: #DC2626;
+}
+
 html[data-theme="light"] {
     --pst-color-primary: #D97706;
     --pst-color-link: #D97706;
@@ -41,7 +46,7 @@ html[data-theme="dark"] {
    page title, the wordmark's amber for every heading below it. Scoped to
    the content area so the sidebar's navigation tree is untouched. */
 .bd-article h1 {
-    color: #DC2626;
+    color: var(--kinetis-red);
 }
 
 .bd-article h2,
@@ -77,6 +82,95 @@ article table.docutils {
 
 .kinetis-footer .sep {
     margin: 0 0.5rem;
+}
+
+/* Site-wide search (docs/SEARCH.md §5): Pagefind's Component UI, loaded
+   from a bundle at runtime by kinetis-search.js. Pagefind 1.5.2's
+   stylesheet declares its --pf-* defaults on :root and its dark set on
+   [data-pf-theme="dark"], both specificity (0,1,0); it has no
+   prefers-color-scheme rule, and nothing here sets data-pf-theme. The
+   html[data-theme] rules below are (0,1,1), so they win whichever loads
+   last, and the modal follows pydata's mode, never the OS scheme. Every
+   variable set for one mode is set for the other too, so none falls back
+   to Pagefind's defaults. The custom properties pass through the
+   components' `all: initial`. Focus is Kinetis red in both modes. */
+html[data-theme] {
+    --pf-text: var(--pst-color-text-base);
+    --pf-text-secondary: var(--pst-color-text-muted);
+    --pf-text-muted: var(--pst-color-text-muted);
+    --pf-background: var(--pst-color-background);
+    --pf-border: var(--pst-color-border);
+    --pf-border-focus: var(--kinetis-red);
+    --pf-outline-focus: var(--kinetis-red);
+    --pf-skeleton: var(--pst-color-surface);
+    --pf-skeleton-shine: var(--pst-color-border);
+    --pf-hover: var(--pst-color-surface);
+    --pf-mark: var(--pst-color-text-base);
+    --pf-font: var(--pst-font-family-base);
+}
+
+/* What pydata has no token for: Pagefind's own light and dark values. */
+html[data-theme="light"] {
+    --pf-scroll-shadow: rgba(0, 0, 0, 0.08);
+    --pf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --pf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.2);
+    --pf-error-bg: #fef2f2;
+    --pf-error-border: #fecaca;
+    --pf-error-text: #dc2626;
+    --pf-error-text-secondary: #b91c1c;
+    --pf-modal-backdrop: rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] {
+    --pf-scroll-shadow: rgba(255, 255, 255, 0.1);
+    --pf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --pf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --pf-error-bg: #2a1a1a;
+    --pf-error-border: #5c2828;
+    --pf-error-text: #f87171;
+    --pf-error-text-secondary: #ef4444;
+    --pf-modal-backdrop: rgba(0, 0, 0, 0.7);
+}
+
+/* pydata's search field is off (disable_search), but any .bd-search a
+   consumer still renders focuses red too, not in pydata's pink accent. */
+.bd-search:focus-within {
+    box-shadow: 0 0 0 0.1875rem var(--kinetis-red);
+}
+
+.bd-search input:focus,
+.bd-search input:focus-visible {
+    outline-color: var(--kinetis-red);
+}
+
+/* The trigger: a search field on wide screens, the icon alone beside the
+   menu button on narrow ones, so pydata's header never wraps. */
+.kinetis-search pagefind-modal-trigger {
+    display: block;
+}
+
+.navbar-persistent--container .kinetis-search:not(:empty) {
+    width: 13rem;
+}
+
+.navbar-persistent--mobile .kinetis-search:not(:empty) {
+    width: 2.75rem;
+}
+
+/* The section label in each result. */
+.kinetis-search-section {
+    display: inline-block;
+    margin-inline-start: 0.5rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--pf-border);
+    border-radius: 0.25rem;
+    color: var(--pf-text-muted);
+    font-size: 0.75em;
+    font-weight: 400;
+    line-height: 1.5;
+    vertical-align: middle;
 }
 
 /* ABlog, for the website's blog. ablog renders on pydata as it is; these

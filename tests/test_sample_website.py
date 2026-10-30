@@ -15,7 +15,8 @@ writes nothing (the previous, already-pruned sitemap must not be pruned
 again; the build fails instead). The docs sample, tests/sample-site, is
 built once too, for the assertions every page of both samples must meet:
 the default header height, the one shared footer and the sidebar scroll
-script in the head.
+script in the head. The serial build is then indexed with the pinned
+Pagefind, as the website's CI does, and the tests read back what it indexed.
 """
 
 import json
@@ -30,6 +31,8 @@ import unittest
 import xml.etree.ElementTree as ET  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from html.parser import HTMLParser
 from pathlib import Path
+
+import pagefind_index
 
 REPO = Path(__file__).resolve().parents[1]
 SAMPLE = REPO / "tests" / "sample-website"
@@ -61,8 +64,21 @@ FOOTER = '<p class="kinetis-footer">'
 SIDEBAR_SCROLL_JS = "kinetis-sidebar-scroll.js"
 PYDATA_JS = "scripts/pydata-sphinx-theme.js"
 
+# Pagefind's URL, title and section of every page it must index: the
+# landing, the blog index and the posts. 404, ablog's listings and search
+# are not source documents, or noindex.
+INDEXED = {
+    "/": (LANDING_TITLE, "Main"),
+    "/blog/": ("Blog", "Blog"),
+    "/blog/posts/hello-kinetis.html": ("Hello, Kinetis", "Blog"),
+    "/blog/posts/second-post.html": ("A second post", "Blog"),
+}
+INDEXED_PAGES = ["index.html", "blog/index.html", *POSTS]
+
 BUILDS = {}
 RESULTS = {}
+INDEX_OUTPUT = {}
+FRAGMENTS = {}
 
 
 ABLOG_PARALLEL_WARNINGS = [
@@ -121,6 +137,9 @@ def setUpModule():
 
     out = BUILDS["docs-sample"] = root / "docs-sample"
     RESULTS["docs-sample"] = sphinx(DOCS_SAMPLE, out, cwd=root)
+
+    INDEX_OUTPUT["serial"] = pagefind_index.index(BUILDS["serial"])
+    FRAGMENTS["serial"] = pagefind_index.fragments(BUILDS["serial"])
 
 
 class Page(HTMLParser):
@@ -217,7 +236,8 @@ def page(name, build="serial"):
 
 def html_pages(build="serial"):
     out = BUILDS[build]
-    return sorted(p.relative_to(out).as_posix() for p in out.rglob("*.html") if p.relative_to(out).parts[0] != "_static")
+    return sorted(p.relative_to(out).as_posix() for p in out.rglob("*.html")
+                  if p.relative_to(out).parts[0] not in ("_static", "pagefind"))
 
 
 def input_head(name):
@@ -261,7 +281,7 @@ def input_jsonld():
 
 def landing_content(raw):
     """The markup inside <div class="kinetis-landing" ...>."""
-    start = raw.index('<div class="kinetis-landing" data-pagefind-body>')
+    start = raw.index('<div class="kinetis-landing"')
     end = raw.index("</main>", start)
     return raw[start:end]
 
@@ -410,7 +430,8 @@ class LandingTest(unittest.TestCase):
         raw = page("index.html").raw
         self.assertIn('<header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none" data-pagefind-ignore>', raw)
         self.assertEqual(1, raw.count("data-pagefind-body"))
-        self.assertIn('<div class="kinetis-landing" data-pagefind-body>', raw)
+        self.assertIn('<div class="kinetis-landing" data-pagefind-body data-pagefind-filter="section:Main"'
+                      ' data-pagefind-meta="section:Main">', raw)
 
     def test_landing_and_404_link_only_the_github_organisation(self):
         # As on docs pages, every github.com link is the organisation: the
@@ -498,9 +519,11 @@ class NotFoundTest(unittest.TestCase):
 
     def test_every_asset_and_link_is_absolute(self):
         # Served for any missing URL, e.g. /a/b/c/missing: nothing may be
-        # page-relative, form actions (pydata's search) included.
+        # page-relative, the search script included. pydata's search form is
+        # gone with disable_search.
         urls = page("404.html").urls
-        self.assertIn(("form", "action", "/search.html"), urls)
+        self.assertIn(("script", "src", "/_static/kinetis-search.js"), [(t, k, u.split("?")[0]) for t, k, u in urls])
+        self.assertNotIn("form", [tag for tag, _, _ in urls])
         self.assertGreater(len(urls), 30)
         for tag, key, url in urls:
             with self.subTest(url=url):
@@ -606,6 +629,41 @@ class SitemapTest(unittest.TestCase):
             with self.subTest(page=name):
                 url = SITE + (name[: -len("index.html")] if name.endswith("index.html") else name)
                 self.assertEqual(page(name).robots == ["noindex"], url not in locs)
+
+
+
+class SearchIndexTest(unittest.TestCase):
+    """What the pinned Pagefind indexes in the website (docs/SEARCH.md §2, §3)."""
+
+    def test_indexing_succeeds(self):
+        result = INDEX_OUTPUT["serial"]
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_landing_blog_index_and_posts_are_indexed_with_title_and_section(self):
+        fragments = FRAGMENTS["serial"]
+        self.assertEqual(sorted(INDEXED), sorted(fragments))
+        for url, (title, section) in INDEXED.items():
+            with self.subTest(url=url):
+                self.assertEqual(title, fragments[url]["meta"]["title"])
+                self.assertEqual(section, fragments[url]["meta"]["section"])
+                self.assertEqual({"section": [section]}, fragments[url]["filters"])
+                self.assertNotIn("#", fragments[url]["meta"]["title"])
+
+    def test_the_landing_title_is_the_title_directive_not_its_first_h1(self):
+        # The landing body's first <h1> is a visually hidden "Kinetis".
+        self.assertIn('<h1 class="visually-hidden">Kinetis</h1>', page("index.html").raw)
+        self.assertEqual(LANDING_TITLE, FRAGMENTS["serial"]["/"]["meta"]["title"])
+
+    def test_only_indexed_pages_carry_the_body_marker(self):
+        # 404 and every ablog listing included; the same pages at -j 2.
+        for build in ("serial", "parallel"):
+            for name in html_pages(build):
+                with self.subTest(build=build, page=name):
+                    expected = 1 if name in INDEXED_PAGES else 0
+                    self.assertEqual(expected, page(name, build).raw.count("data-pagefind-body"))
+                    self.assertEqual(expected, page(name, build).raw.count('data-pagefind-meta="title[content]"'))
+        for name in ("404.html", *LISTINGS):
+            self.assertIn(name, html_pages())
 
 
 if __name__ == "__main__":

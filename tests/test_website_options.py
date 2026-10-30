@@ -297,8 +297,16 @@ class SetupTest(unittest.TestCase):
         # After sphinx-sitemap's create_sitemap (500).
         self.assertIn(("build-finished", "prune_sitemap", 600), connected)
         self.assertIn(("builder-inited", "remove_previous_sitemap", 500), connected)
-        # Neither defer nor async, so it runs before pydata's deferred script.
-        self.assertEqual([(("kinetis-sidebar-scroll.js",), {})], scripts)
+        # After pydata's update_config (500), which writes its own "#".
+        self.assertIn(("builder-inited", "default_permalinks_icon", 600), connected)
+        # The scroll script: neither defer nor async, so it runs before
+        # pydata's deferred script. The search script: deferred, with the
+        # bundle list as data.
+        self.assertEqual([
+            (("kinetis-sidebar-scroll.js",), {}),
+            (("kinetis-search.js",), {"loading_method": "defer",
+                                      "data-kinetis-bundles": '["/pagefind/", "/docs/pagefind/", "/vector/docs/pagefind/"]'}),
+        ], scripts)
 
 
 class LandingTemplateTest(unittest.TestCase):

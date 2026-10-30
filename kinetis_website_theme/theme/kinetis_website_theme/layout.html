@@ -18,21 +18,38 @@
   {%- endif %}
 {%- endblock %}
 
-{#- The favicons are kinetis-website's own /assets/ files, outside every docs
+{#- The metas are pydata 0.23.0's extrahead, copied without the three Sphinx
+   search scripts it loads on every page (searchtools.js, language_data.js,
+   searchindex.js): search is Pagefind's (docs/SEARCH.md §5).
+   tests/test_sample_site.py pins both this output and pydata's block;
+   re-copy it when the pin changes.
+   The favicons are kinetis-website's own /assets/ files, outside every docs
    build, so they are linked site-root-relative exactly as the Furo-era
    page.html did. html_favicon stays unset: Sphinx would emit a
    page-relative link to a file the build ships. #}
 {%- block extrahead %}
-  {{- super() }}
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="{{ language }}"/>
+  <meta name="docsearch:version" content="{{ version }}" />
+  {%- if last_updated %}
+    <meta name="docbuild:last-update" content="{{ last_updated | e }}"/>
+  {%- endif %}
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" href="/assets/favicon.ico" sizes="256x256">
 <link rel="apple-touch-icon" href="/assets/favicon.png" sizes="256x256">
   {%- if kinetis_noindex %}
 <meta name="robots" content="noindex">
   {%- endif %}
+  {%- if kinetis_pagefind_body %}
+<meta data-pagefind-meta="title[content]" content="{{ title|striptags|e }}">
+  {%- endif %}
 {%- endblock extrahead %}
 
-{#- data-pagefind-* mark the indexable body for a later site-wide search. #}
+{#- Pagefind indexes only the page's body (docs/SEARCH.md §2, §3): the
+   header and both sidebars are data-pagefind-ignore, and only a page
+   kinetis_pagefind_body allows carries data-pagefind-body, with its section
+   as a filter and a meta value; kinetis/landing.html marks its body alike. #}
 {% block docs_navbar %}
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none" data-pagefind-ignore>
       {%- include "sections/header.html" %}
@@ -40,10 +57,10 @@
 {% endblock docs_navbar %}
 
 {#- No role="main" here: pydata's <main role="main"> around this block is the
-   page's only main landmark. The article stays the Pagefind body. #}
+   page's only main landmark. The article is the Pagefind body. #}
 {% block docs_body %}
                 {% include "components/searchbox.html" %}
-                <article class="bd-article" data-pagefind-body>
+                <article class="bd-article"{% if kinetis_pagefind_body %} data-pagefind-body data-pagefind-filter="section:{{ kinetis_search_section }}" data-pagefind-meta="section:{{ kinetis_search_section }}"{% endif %}>
                   {% block body %}{% endblock %}
                 </article>
 {% endblock docs_body %}

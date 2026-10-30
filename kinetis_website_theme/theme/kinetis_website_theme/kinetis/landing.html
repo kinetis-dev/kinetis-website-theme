@@ -16,7 +16,7 @@
 {%- endblock %}
 
 {% block docs_main %}
-        <div class="kinetis-landing" data-pagefind-body>
+        <div class="kinetis-landing"{% if kinetis_pagefind_body %} data-pagefind-body data-pagefind-filter="section:{{ kinetis_search_section }}" data-pagefind-meta="section:{{ kinetis_search_section }}"{% endif %}>
           {{ body }}
         </div>
 {% endblock docs_main %}

@@ -37,7 +37,7 @@ jobs:
       # python:3.12-slim has no node; tests/test_sidebar_scroll.py skips without it.
       - name: Install node for the sidebar scroll script's behaviour test
         run: apt-get update -q && apt-get install -y -q --no-install-recommends nodejs && node --version
-      - name: Install the wheel with both extras, plus both sample projects' extensions
+      - name: Install the wheel with both extras, plus both sample projects' extensions and Pagefind
         run: |
           wheel="$(ls dist/*.whl)"
           pip install -q "${wheel}[blog,notfound]" -r tests/sample-site/requirements.txt -r tests/sample-website/requirements.txt
@@ -45,6 +45,11 @@ jobs:
         run: sphinx-build -W --keep-going -b html tests/sample-site _build
       - name: Build the sample website
         run: sphinx-build -W --keep-going -b html tests/sample-website build/website
+      # As every consumer does, after the build and before its checks.
+      - name: Index both samples with Pagefind
+        run: |
+          python -m pagefind --site _build
+          python -m pagefind --site build/website
       - name: URL-baseline guard
         run: python tools/check_url_baseline.py check _build
       - name: Unit and assertion tests
@@ -63,7 +68,7 @@ jobs:
         with:
           name: wheel
           path: dist
-      - name: Install the wheel with both extras, both sample projects' extensions, Playwright and Pillow
+      - name: Install the wheel with both extras, both sample projects' extensions and Pagefind, Playwright and Pillow
         run: |
           wheel="$(ls dist/*.whl)"
           python3 -m pip install -q "${wheel}[blog,notfound]" -r tests/sample-site/requirements.txt \
@@ -72,8 +77,18 @@ jobs:
         run: sphinx-build -W --keep-going -b html tests/sample-site _build
       - name: Build the sample website
         run: sphinx-build -W --keep-going -b html tests/sample-website build/website
+      # The docs sample again as the Vector docs, for the mock kinetis.dev.
+      - name: Build the sample site under /vector/docs/
+        run: sphinx-build -W --keep-going -b html -D html_baseurl=https://kinetis.dev/vector/docs/ tests/sample-site build/vector
+      - name: Index the three builds with Pagefind
+        run: |
+          python3 -m pagefind --site _build
+          python3 -m pagefind --site build/website
+          python3 -m pagefind --site build/vector
       - name: Compare light/dark screenshots with the goldens
         run: python3 tests/goldens/goldens.py check _build build/website --out goldens-output
+      - name: Site-wide search end to end
+        run: python3 tests/goldens/search_e2e.py build/website _build build/vector
       - if: failure()
         uses: actions/upload-artifact@v7
         with:

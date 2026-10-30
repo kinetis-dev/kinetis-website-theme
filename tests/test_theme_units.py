@@ -8,7 +8,7 @@ from unittest import mock
 
 import kinetis_website_theme as theme
 from kinetis_website_theme import nav
-from kinetis_website_theme.nav import NAV, Item, active_section
+from kinetis_website_theme.nav import NAV, SEARCH_BUNDLES, Item, active_section, search_section
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -114,6 +114,22 @@ class DefaultsTest(unittest.TestCase):
         self.assertEqual("https://kinetis.dev/", second.html_theme_options["logo"]["link"])
         self.assertEqual([], theme.THEME_OPTION_DEFAULTS["icon_links"])
 
+    def test_search_is_the_themes_pagefind_trigger_and_pydatas_is_off(self):
+        config = self.config()
+        theme.apply_defaults(None, config)
+        self.assertEqual(["kinetis-search"], config.html_theme_options["navbar_persistent"])
+        self.assertIs(True, config.html_theme_options["disable_search"])
+        self.assertTrue((theme.THEME_PATH / "components" / "kinetis-search.html").is_file())
+        self.assertTrue((theme.THEME_PATH / "static" / "kinetis-search.js").is_file())
+        self.assertTrue((theme.THEME_PATH / "search.html").is_file())
+
+    def test_consumer_search_options_win(self):
+        options = {"navbar_persistent": ["search-button"], "disable_search": False}
+        config = self.config(html_theme_options=options)
+        theme.apply_defaults(None, config)
+        self.assertEqual(["search-button"], options["navbar_persistent"])
+        self.assertIs(False, options["disable_search"])
+
     def test_pygments_pair_is_furos(self):
         options = theme.THEME_OPTION_DEFAULTS
         self.assertEqual(("a11y-light", "native"), (options["pygments_light_style"], options["pygments_dark_style"]))
@@ -136,6 +152,63 @@ class NoindexTest(unittest.TestCase):
 
     def test_ordinary_page_is_indexed(self):
         self.assertFalse(theme.is_noindex("guide", {"title": "Guide"}, []))
+
+
+class SearchTest(unittest.TestCase):
+    def test_bundles(self):
+        self.assertEqual(("/pagefind/", "/docs/pagefind/", "/vector/docs/pagefind/"), SEARCH_BUNDLES)
+
+    def test_every_bundle_is_a_nav_sections_root(self):
+        # The bundle of each build lives at its root; the website's holds Home and Blog.
+        roots = {item.href for item in NAV} - {"/blog/"}
+        self.assertEqual(roots, {bundle.removesuffix("pagefind/") for bundle in SEARCH_BUNDLES})
+
+    def test_sections(self):
+        self.assertEqual("Docs", search_section("Docs"))
+        self.assertEqual("Vector", search_section("Vector"))
+        self.assertEqual("Blog", search_section("Blog"))
+        self.assertEqual("Main", search_section("Home"))
+        self.assertEqual("Main", search_section(None))
+
+    def test_sections_from_deployed_paths(self):
+        for path, section in (("/index.html", "Main"), ("/about.html", "Main"), ("/blog/index.html", "Blog"),
+                              ("/blog/posts/x.html", "Blog"), ("/docs/guide.html", "Docs"),
+                              ("/vector/docs/index.html", "Vector")):
+            self.assertEqual(section, search_section(active_section(path)), path)
+
+    def test_indexed_pages_are_source_documents_that_are_not_noindex(self):
+        env = SimpleNamespace(found_docs={"index", "guide", "404", "notes", "blog/tag"},
+                              metadata={"notes": {"kinetis_noindex": "true"}})
+        patterns = ["blog/tag*"]
+        self.assertTrue(theme.is_search_indexed(env, "index", patterns))
+        self.assertTrue(theme.is_search_indexed(env, "guide", patterns))
+        for pagename in ("404", "notes", "blog/tag", "search", "genindex", "py-modindex", "blog"):
+            self.assertFalse(theme.is_search_indexed(env, pagename, patterns), pagename)
+
+
+class PermalinksIconTest(unittest.TestCase):
+    def app(self, raw=None, overrides=None):
+        config = SimpleNamespace(overrides=overrides or {}, _raw_config=raw or {}, html_permalinks_icon="#")
+        return SimpleNamespace(config=config)
+
+    def test_default_is_kept_out_of_pagefind(self):
+        app = self.app()
+        theme.default_permalinks_icon(app)
+        self.assertEqual("<span data-pagefind-ignore>#</span>", app.config.html_permalinks_icon)
+
+    def test_conf_py_value_wins(self):
+        app = self.app(raw={"html_permalinks_icon": "#"})
+        theme.default_permalinks_icon(app)
+        self.assertEqual("#", app.config.html_permalinks_icon)
+
+    def test_command_line_value_wins(self):
+        app = self.app(overrides={"html_permalinks_icon": "#"})
+        theme.default_permalinks_icon(app)
+        self.assertEqual("#", app.config.html_permalinks_icon)
+
+    def test_runs_after_pydatas_default(self):
+        # pydata's update_config writes "#" at builder-inited, default priority 500.
+        self.assertGreater(theme.PERMALINKS_ICON_PRIORITY, 500)
 
 
 class VersionTest(unittest.TestCase):

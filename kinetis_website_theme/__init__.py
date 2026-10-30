@@ -5,6 +5,7 @@ default comes from here.
 """
 
 import html
+import json
 import re
 from copy import deepcopy
 from fnmatch import fnmatch
@@ -15,12 +16,13 @@ from urllib.parse import urlparse
 # third-party XML; ElementTree does not resolve external entities.
 import xml.etree.ElementTree as ET  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 
+from pydata_sphinx_theme.utils import config_provided_by_user
 from sphinx.errors import ExtensionError
 from sphinx.util import logging
 
-from .nav import NAV, active_section
+from .nav import NAV, SEARCH_BUNDLES, active_section, search_section
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +45,10 @@ THEME_OPTION_DEFAULTS = {
     # No navbar-icon-links: the header carries no GitHub icon (the footer
     # links the organisation), so no empty icon container renders either.
     "navbar_end": ["theme-switcher"],
-    # Per-project Sphinx search, as Furo has today.
-    "navbar_persistent": ["search-button"],
+    # The site-wide Pagefind search trigger (docs/SEARCH.md §5), filled in by
+    # kinetis-search.js; pydata's own search is off.
+    "navbar_persistent": ["kinetis-search"],
+    "disable_search": True,
     "icon_links": [],
     # No breadcrumbs: keep the Furo look.
     "article_header_start": [],
@@ -80,11 +84,18 @@ LANDING_CSS = "kinetis-landing.css"
 # after sphinxext-opengraph has written og:url into metatags, whatever order
 # the extensions were set up in. The sitemap pruner runs after sphinx-sitemap
 # has written the file.
+# The permalink icon default runs after pydata's update_config, which writes
+# "#" at the default priority.
 LANDING_PRIORITY = 700
+PERMALINKS_ICON_PRIORITY = 600
 INDEX_AS_DIRECTORY_PRIORITY = 800
 PRUNE_SITEMAP_PRIORITY = 600
 
 SUPPORTED_SITEMAP_SCHEME = "{link}"
+
+# The same "#" as pydata's, kept out of Pagefind's titles and words.
+PERMALINKS_ICON = "<span data-pagefind-ignore>#</span>"
+SEARCH_JS = "kinetis-search.js"
 
 
 def apply_defaults(app, config):
@@ -96,6 +107,16 @@ def apply_defaults(app, config):
         options.setdefault(key, deepcopy(value))
     if not config.html_sidebars:
         config.html_sidebars = dict(HTML_SIDEBARS_DEFAULT)
+
+
+def default_permalinks_icon(app):
+    """Headerlinks render "#" inside data-pagefind-ignore (builder-inited, priority 600).
+
+    Without it Pagefind titles a page "Routing#". Runs after pydata has
+    written its own "#" default, and only when the consumer set no icon.
+    """
+    if not config_provided_by_user(app, "html_permalinks_icon"):
+        app.config.html_permalinks_icon = PERMALINKS_ICON
 
 
 def page_url_path(baseurl, pagename):
@@ -122,6 +143,18 @@ def html_page_context(app, pagename, templatename, context, doctree):
     context["kinetis_noindex"] = is_noindex(
         pagename, app.env.metadata.get(pagename, {}), app.config.kinetis_noindex_patterns
     )
+    context["kinetis_pagefind_body"] = is_search_indexed(app.env, pagename, app.config.kinetis_noindex_patterns)
+    context["kinetis_search_section"] = search_section(active)
+
+
+def is_search_indexed(env, pagename, patterns):
+    """Whether Pagefind indexes the page: a source document that is not noindex.
+
+    Pages Sphinx or an extension generates (search, genindex, ablog listings)
+    are not in found_docs. Read from the environment alone, so -j builds
+    mark the same pages.
+    """
+    return pagename in env.found_docs and not is_noindex(pagename, env.metadata.get(pagename, {}), patterns)
 
 
 def page_template(pagename, metadata):
@@ -355,11 +388,14 @@ def setup(app):
     app.connect("html-page-context", landing_page_context, priority=LANDING_PRIORITY)
     app.connect("html-page-context", index_as_directory, priority=INDEX_AS_DIRECTORY_PRIORITY)
     app.connect("builder-inited", remove_previous_sitemap)
+    app.connect("builder-inited", default_permalinks_icon, priority=PERMALINKS_ICON_PRIORITY)
     app.connect("build-finished", prune_sitemap, priority=PRUNE_SITEMAP_PRIORITY)
     # Loads after pydata's stylesheet and before the consumer's html_css_files.
     app.add_css_file("kinetis.css")
     # Neither defer nor async: it runs while the head is parsed, before
     # pydata's deferred script reads the sidebar scroll key it scopes.
     app.add_js_file("kinetis-sidebar-scroll.js")
+    # Probes SEARCH_BUNDLES and builds the Pagefind UI once the page is parsed.
+    app.add_js_file(SEARCH_JS, loading_method="defer", **{"data-kinetis-bundles": json.dumps(list(SEARCH_BUNDLES))})
 
     return {"version": __version__, "parallel_read_safe": True, "parallel_write_safe": True}

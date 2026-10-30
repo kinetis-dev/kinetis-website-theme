@@ -7,3 +7,7 @@ sphinxext-opengraph==0.13.0
 sphinx-sitemap==2.9.0
 ablog==0.11.13
 sphinx-notfound-page==1.1.0
+# Site-wide search, as every consumer pins it (docs/SEARCH.md §1): CI
+# indexes the build with `python -m pagefind --site <out>` after building it.
+pagefind[extended]==1.5.2
+pagefind-bin-extended==1.5.2

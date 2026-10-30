@@ -15,6 +15,21 @@ NAV = (
     Item("Blog", "/blog/"),
 )
 
+# The Pagefind bundle of every kinetis.dev build (docs/SEARCH.md §1, §4.1).
+# kinetis-search.js probes these, after the page's own bundle, and merges
+# every one that is present.
+SEARCH_BUNDLES = ("/pagefind/", "/docs/pagefind/", "/vector/docs/pagefind/")
+
+# The Pagefind `section` of a page, by the NAV item that owns it; a page no
+# item owns, the site root included, is Main (docs/SEARCH.md §3).
+SEARCH_SECTIONS = {"Docs": "Docs", "Vector": "Vector", "Blog": "Blog"}
+MAIN_SECTION = "Main"
+
+
+def search_section(active: str | None) -> str:
+    """The Pagefind section of a page whose active NAV item is ``active``."""
+    return SEARCH_SECTIONS.get(active, MAIN_SECTION)
+
 
 def active_section(url_path: str) -> str | None:
     """Return the label of the NAV item that owns ``url_path``.
