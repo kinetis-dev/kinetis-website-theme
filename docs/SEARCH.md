@@ -33,8 +33,11 @@ Re-check it whenever the pinned version changes.
   ```
 
   No other flag and no `pagefind.yml`. The theme's markup (§2, §3) carries
-  everything Pagefind needs. Pagefind exits non-zero when it indexes no
-  page, so a build that lost its `data-pagefind-body` markers fails CI.
+  everything Pagefind needs. Pagefind exits non-zero only when it finds no
+  HTML page at all. A build that lost its `data-pagefind-body` markers does
+  not fail: Pagefind then indexes every page's whole `<body>`, 404 and
+  listings included, and exits 0. The theme's tests pin the indexed page
+  set, so a theme release cannot lose the markers unnoticed.
 - The bundle lands at `<output-dir>/pagefind/` and is deployed with the
   build. The three bundles are:
 
@@ -165,9 +168,9 @@ finishes loading. The theme therefore probes before it configures anything:
   and `pagefind-component-ui.js` from the primary, then calls
   `configureInstance` with `bundlePath` set to the primary and `mergeIndex`
   set to every other present bundle. Only after that does it insert the
-  `<pagefind-*>` elements. `configureInstance` is silently ignored once a
-  component of the same instance has connected, so no `<pagefind-*>` element
-  is in the static HTML.
+  `<pagefind-*>` elements. `configureInstance` is ignored, with only a
+  `console.warn`, once a component of the same instance has connected, so
+  no `<pagefind-*>` element is in the static HTML.
 - **Result URLs** need no option. Pagefind derives each bundle's base URL
   from its path (`/docs/pagefind/` gives `/docs/`), so links from every
   bundle are correct on every section.
@@ -196,9 +199,12 @@ mid-rollout.
 - **Trigger and modal.** `navbar_persistent` defaults to
   `["kinetis-search"]`, a new component, instead of pydata's
   `search-button`. Its static markup is an empty placeholder;
-  `kinetis-search.js` fills it as in §4.3:
-  - a `<pagefind-modal-trigger>`;
-  - a `<pagefind-modal>` whose contents are, in order:
+  `kinetis-search.js` fills it as in §4.3. pydata renders every
+  `navbar_persistent` item twice, for wide and narrow screens, and hides one
+  copy with `display: none`, under which a `<dialog>` never shows. So each
+  placeholder gets its own trigger and the one modal goes in `<body>`:
+  - a `<pagefind-modal-trigger>` in each placeholder;
+  - one `<pagefind-modal>` whose contents are, in order:
     - `<pagefind-input>`;
     - a `<pagefind-filter-dropdown filter="section" label="Section">`;
     - `<pagefind-summary>`;

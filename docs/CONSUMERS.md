@@ -5,11 +5,15 @@ requirements file. A release reaches a property only through a one-line pin
 bump PR there. Dependabot cannot bump URL requirements, so these are made by
 hand or with `tools/bump_pin.py`.
 
-| Repository | Pin location | Deploys to | Extras | Status |
-|---|---|---|---|---|
-| `kinetis-dev/kinetis` | `docs/requirements.txt` | `https://kinetis.dev/docs/` | none | adopts in phase 3 |
-| `kinetis-dev/vector-dev` | `docs/requirements.txt` | `https://kinetis.dev/vector/docs/` | none | adopts in phase 2 |
-| `kinetis-dev/kinetis-website` | `site/requirements.txt` | `https://kinetis.dev/` | `[blog,notfound]` | future, when `site/` exists (phase 5b) |
+| Repository | Pin location | Deploys to | Search bundle (0.5.0) | Extras | Status |
+|---|---|---|---|---|---|
+| `kinetis-dev/kinetis` | `docs/requirements.txt` | `https://kinetis.dev/docs/` | `/docs/pagefind/` | none | adopts in phase 3 |
+| `kinetis-dev/vector-dev` | `docs/requirements.txt` | `https://kinetis.dev/vector/docs/` | `/vector/docs/pagefind/` | none | adopts in phase 2 |
+| `kinetis-dev/kinetis-website` | `site/requirements.txt` | `https://kinetis.dev/` | `/pagefind/` | `[blog,notfound]` | future, when `site/` exists (phase 5b) |
+
+From 0.5.0 the same requirements file also pins Pagefind
+(`pagefind[extended]==1.5.2`, `pagefind-bin-extended==1.5.2`), and each
+build is indexed into its search bundle; see "Adopting 0.5.0".
 
 The pin line:
 
@@ -69,12 +73,55 @@ in either order, and the website last, because the website's 0.4.0 PR also
 deletes its Vector landing page, `/vector/`. Bumped in this order, no
 section links to `/vector/` after it is gone.
 
+## Adopting 0.5.0
+
+Site-wide search with Pagefind; `docs/SEARCH.md` is the contract. Every
+consumer, in the PR that bumps the pin:
+
+1. Adds the two Pagefind pins to the requirements file that builds the site
+   (`docs/requirements.txt`, or `site/requirements.txt` for the website). Pin
+   both exactly: the wrapper alone accepts any 1.x binary, and bundles of
+   different Pagefind versions must not meet in one search.
+
+   ```
+   pagefind[extended]==1.5.2
+   pagefind-bin-extended==1.5.2
+   ```
+
+2. Indexes its finished build in CI and in the deploy workflow, after
+   `sphinx-build` and after any step that removes files from the output, and
+   before the build's checks:
+
+   ```sh
+   python -m pagefind --site <output-dir>
+   ```
+
+   No other flag and no `pagefind.yml`. Pagefind fails only on a build with
+   no HTML at all; it does not notice missing theme markers, so keep the
+   theme pinned to a tested release.
+
+3. Deploys the bundle with the build. It lands at `<output-dir>/pagefind/`,
+   so it is served at the section's bundle path in the table above. Let the
+   URL guard accept the new `pagefind/` files; new URLs are allowed by the
+   docs baseline rules. The website's root sync must not delete `/docs/` or
+   `/vector/`, which it already excludes.
+
+4. Keeps `html_baseurl` set to the deployed URL: it decides each page's
+   search section.
+
+Order: release the theme, deploy kinetis and vector-dev in either order,
+then the website last, and confirm that a search from each section returns
+results from all four (website, blog, Kinetis docs, Vector docs). Until a
+section deploys, the others search without it. A build served on its own
+after indexing (`python -m http.server -d <output-dir>`) searches only
+itself; one that is not indexed shows no search box.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
 
 ```sh
-python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.4.0
+python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.5.0
 ```
 
 It rewrites only the pin line, keeps any extras, and prints the diff. It

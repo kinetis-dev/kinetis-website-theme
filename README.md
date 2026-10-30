@@ -16,14 +16,14 @@ adding a navbar and footer that all three properties share.
 Pin the release in the consumer's `requirements.txt`, replacing `furo`:
 
 ```
-kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.4.0/kinetis_website_theme-0.4.0-py3-none-any.whl
+kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.5.0/kinetis_website_theme-0.5.0-py3-none-any.whl
 ```
 
 The website, which needs ABlog and the 404 page, adds the extras (pip
 accepts extras on a direct-URL requirement):
 
 ```
-kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.4.0/kinetis_website_theme-0.4.0-py3-none-any.whl
+kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.5.0/kinetis_website_theme-0.5.0-py3-none-any.whl
 ```
 
 pip downloads only the theme from that URL and resolves its dependencies
@@ -38,7 +38,7 @@ That is all a consumer sets. The theme supplies the rest:
 
 - The navbar: the horizontal Kinetis logo (`logo-h.svg`) linking to `https://kinetis.dev/`, the site
   navigation (Home `/`, Docs `/docs/`, Vector `/vector/docs/`, Blog `/blog/`)
-  with the current section marked, search and the light/dark switcher. It
+  with the current section marked, the site-wide search and the light/dark switcher. It
   has no GitHub icon (`icon_links` is empty). The section is the item whose
   href is the longest prefix of the page's deployed path (Home only for the
   root itself), so every `/vector/docs/` page is Vector; ablog's root
@@ -49,6 +49,8 @@ That is all a consumer sets. The theme supplies the rest:
 - The footer: copyright, Docs, GitHub (`https://github.com/kinetis-dev`) and
   Packagist (`https://packagist.org/packages/kinetis/`). It is the same on
   every page, landing and 404 pages included.
+- Site-wide search with Pagefind, across the website, the blog and both docs
+  sets, once the consumer indexes its build (see "Search" below).
 - The kinetis.dev colours, the heading colours and full-width tables.
 - The three `/assets/favicon.*` links. Leave `html_favicon` unset.
 - `<title>` in Furo's format, `Page - Project` with the project name alone on
@@ -104,6 +106,39 @@ handler with priority 800. That runs it after every handler at the default
 500, sphinxext-opengraph's included, whatever order the extensions were set
 up in.
 
+### Search
+
+`docs/SEARCH.md` is the contract; `docs/CONSUMERS.md` has the consumer
+steps. Each consumer pins `pagefind[extended]==1.5.2` and
+`pagefind-bin-extended==1.5.2` and runs `python -m pagefind --site
+<output-dir>` after `sphinx-build`, which writes the bundle to
+`<output-dir>/pagefind/`. The theme supplies everything else:
+
+- **Index markup.** A page is indexed when it is a source document and not
+  noindex. Only those pages carry `data-pagefind-body`, on the article
+  (`.kinetis-landing` on landing pages), with its section as
+  `data-pagefind-filter` and `data-pagefind-meta`: `Docs`, `Vector`, `Blog`,
+  or `Main` for every other page, from the nav section of its deployed path.
+  Their head carries `<meta data-pagefind-meta="title[content]">` with the
+  page title. 404, ablog's listings, `search`, `genindex` and `py-modindex`
+  are not indexed. Headerlinks render `<span data-pagefind-ignore>#</span>`
+  unless `html_permalinks_icon` is set, so the `#` stays out of the index.
+- **UI.** `navbar_persistent` defaults to `["kinetis-search"]`, an empty
+  placeholder, and `disable_search` to `True`, which removes pydata's search.
+  `kinetis-search.js` probes this build's own bundle and the three
+  kinetis.dev bundles (`SEARCH_BUNDLES` in `nav.py`: `/pagefind/`,
+  `/docs/pagefind/`, `/vector/docs/pagefind/`), loads Pagefind's Component UI
+  from the first one present and merges the others, so results come from
+  every section deployed. A missing bundle is skipped; with none, no search
+  UI appears. Ctrl+K (⌘K) opens the modal; the trigger is icon-only on
+  narrow screens. `search.html` keeps its URL and title and holds a
+  full-page search that runs `?q=`.
+- **No Sphinx search on pages.** `searchtools.js`, `language_data.js` and
+  `searchindex.js` are no longer loaded; Sphinx still writes
+  `searchindex.js`.
+- **Colours.** The Component UI's `--pf-*` variables follow pydata's tokens
+  in light and dark mode, and focus rings are `--kinetis-red` (`#DC2626`).
+
 ### The website: landing pages, 404 and blog
 
 Front matter keys the theme reads:
@@ -115,8 +150,9 @@ Front matter keys the theme reads:
 
 `kinetis/landing.html` keeps pydata's header, at the same default height as
 on docs pages, with the brand, the site nav and the theme switcher. The page
-body follows inside `<div class="kinetis-landing" data-pagefind-body>`,
-within pydata's `<main id="main-content">`, which stays the page's only main
+body follows inside `<div class="kinetis-landing">`, the search index body
+on indexed pages (never on 404), within pydata's `<main id="main-content">`,
+which stays the page's only main
 landmark. The page has no sidebars (the primary sidebar only carries the
 navbar items on narrow screens), no article chrome and no prev/next. It ends
 with pydata's footer and the shared `kinetis-footer`, exactly as docs pages
@@ -193,15 +229,21 @@ pip install "$(ls dist/*.whl)[blog,notfound]" -r tests/sample-site/requirements.
   -r tests/sample-website/requirements.txt
 sphinx-build -W --keep-going -b html tests/sample-site _build
 sphinx-build -W --keep-going -b html tests/sample-website build/website
+python -m pagefind --site _build
+python -m pagefind --site build/website
 python tools/check_url_baseline.py check _build
 python -m unittest discover -s tests -v
 ```
+
+Both sample requirements files pin Pagefind, which the tests need: they
+index their own builds and decode what Pagefind indexed.
 
 `tests/sample-site/` is a small docs project shaped like kinetis/docs.
 `tests/test_sample_site.py` builds it three times, with `html_baseurl` set to
 `/docs/`, `/vector/docs/` and `/`, and asserts on the HTML. The cases include
 the active nav item, the footer links, the favicons, the title format, noindex
-and a clean `-W` build. `tools/check_url_baseline.py` is the kinetis URL
+and a clean `-W` build, plus the indexed page set, titles and sections, and
+the head that replaces pydata's search scripts. `tools/check_url_baseline.py` is the kinetis URL
 guard, and the sample site's baseline is its self-test.
 
 `tests/sample-website/` is shaped like kinetis.dev as a Sphinx project: the
@@ -211,7 +253,8 @@ the sitemap pruner. `tests/test_sample_website.py` builds it serially and at
 `-j 2`. It asserts on the landing head and body, the 404 page's links,
 noindex on the listings, the feed and the exact sitemap.
 `tests/test_landing_css.py` re-derives `kinetis-landing.css` from the
-website's `style.css`. Screenshot goldens are described in
+website's `style.css`. Screenshot goldens and the search end-to-end test
+(`tests/goldens/search_e2e.py`, on a mock kinetis.dev) are described in
 `tests/goldens/README.md`.
 
 ## Releasing

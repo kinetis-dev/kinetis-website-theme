@@ -4,6 +4,68 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.5.0
+
+Site-wide search. Every search box on every kinetis.dev page searches the
+website, the blog, the Kinetis docs and the Vector docs at once, with
+[Pagefind](https://pagefind.app/) 1.5.2 in place of each build's own Sphinx
+search. `docs/SEARCH.md` is the contract. Minor under the rule above: no
+template, component, option or CSS variable is removed.
+
+**Consumer impact:** each consumer now indexes its build. All three add
+`pagefind[extended]==1.5.2` and `pagefind-bin-extended==1.5.2` to the
+requirements file that builds the site, and run
+`python -m pagefind --site <output-dir>` in CI and in the deploy workflow,
+right after `sphinx-build` and any step that removes files from the output,
+and before the checks. The bundle lands at `<output-dir>/pagefind/` and
+deploys with the build; URL guards must accept the new `pagefind/` files.
+Keep `html_baseurl` set to the deployed URL: it decides each page's
+section. A build that is not indexed renders no search UI. Bump kinetis and
+vector-dev first, in either order, and the website last; until a section
+deploys its bundle, the others search without it. See `docs/CONSUMERS.md`.
+
+Added:
+
+- `kinetis-search`, a `navbar_persistent` component: an empty placeholder
+  that `kinetis-search.js` fills with Pagefind's Component UI, a modal
+  trigger (icon only on narrow screens) and one modal with the input, a
+  Section filter, the summary and results labelled with their section. The
+  shortcut is Pagefind's Ctrl+K (⌘K on macOS).
+- `kinetis-search.js`, deferred on every page. It probes the page's own
+  bundle (`pagefind/` under the content root) and the three kinetis.dev
+  bundles, `SEARCH_BUNDLES` in `nav.py`: `/pagefind/`, `/docs/pagefind/`
+  and `/vector/docs/pagefind/`. It loads the UI from the first present one
+  and merges every other present bundle of the same Pagefind version. A
+  bundle of another version is skipped with a `console.warn`. With no
+  bundle, no UI is inserted. A component stylesheet that fails to load is
+  reported with a `console.warn`. No Pagefind file is vendored.
+- Indexing markup: only pages that are source documents and not noindex
+  carry `data-pagefind-body` (the article, or `.kinetis-landing` on landing
+  pages), with `data-pagefind-filter` and `data-pagefind-meta`
+  `section:Docs|Vector|Blog|Main` from the page's nav section. Their head
+  has `<meta data-pagefind-meta="title[content]">` with the page title. 404,
+  ablog's listings, `search`, `genindex` and `py-modindex` are not indexed.
+- `search.html` overrides pydata's: same URL and `<title>`, the "Search" h1
+  and `#search-results` in the main landmark, now with a full-page Pagefind
+  search that runs `?q=`.
+- `--kinetis-red` (`#DC2626`), used by `.bd-article h1` and every search
+  focus ring, in light and dark mode.
+
+Changed:
+
+- `navbar_persistent` defaults to `["kinetis-search"]` (was
+  `["search-button"]`) and `disable_search` to `True`, which removes
+  pydata's search dialog. Either can still be overridden.
+- `html_permalinks_icon` defaults to `<span data-pagefind-ignore>#</span>`,
+  which renders the same `#`, when the consumer sets none.
+- The theme's `extrahead` no longer loads `searchtools.js`,
+  `language_data.js` and `searchindex.js` on every page. It still emits
+  pydata's viewport, `color-scheme`, `docsearch:*` and
+  `docbuild:last-update` metas. Sphinx still writes `searchindex.js`.
+- The Component UI's `--pf-*` colours follow pydata's tokens on
+  `html[data-theme]`, set for both modes, so the OS colour scheme never
+  decides them.
+
 ## 0.4.0
 
 The Vector nav item links to the Vector manual, `/vector/docs/`, on every
