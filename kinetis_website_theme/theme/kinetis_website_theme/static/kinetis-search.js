@@ -3,11 +3,12 @@
  * docs/SEARCH.md §4 and §5 are the contract. The candidates are this page's
  * own bundle (pagefind/ under <html data-content_root>) and the theme's
  * SEARCH_BUNDLES, passed in this script's data-kinetis-bundles. Pagefind
- * 1.5.2 fails the whole instance when a merged bundle is missing, so each is
- * probed first; the first present one is the primary, whose Component UI is
- * loaded and configured with every other present bundle of the same version
- * as mergeIndex. Only then are the <pagefind-*> elements inserted:
- * configureInstance is ignored once a component of the instance connected.
+ * (1.6.0, as 1.5.2) fails the whole instance when a merged bundle is missing,
+ * so each is probed first; the first present one is the primary, whose
+ * Component UI is loaded and configured with every other present bundle of
+ * the same version as mergeIndex. Only then are the <pagefind-*> elements
+ * inserted: configureInstance is ignored once the instance has loaded, and a
+ * component loads it on first use.
  * With no bundle present nothing is inserted and nothing is logged.
  */
 (function () {
@@ -110,10 +111,16 @@
   // One trigger per placeholder (pydata renders navbar_persistent twice, the
   // narrow-screen copy compact) and one modal. The modal goes in <body>: a
   // <dialog> under the placeholder that is display:none would never show.
+  // The trigger's label (its text, and its aria-label when compact) is set:
+  // Pagefind 1.6.0 resolves the UI language before the first render, so
+  // its default became the keyboard hint's lowercase "search" (1.5.2
+  // rendered its "Search" fallback).
   function buildModal(placeholders) {
     var triggers = placeholders.map(function (placeholder) {
       var narrow = placeholder.closest(".navbar-persistent--mobile") !== null;
-      var trigger = element("pagefind-modal-trigger", narrow ? { compact: "", "hide-shortcut": "" } : {});
+      var attributes = narrow ? { compact: "", "hide-shortcut": "" } : {};
+      attributes.placeholder = "Search";
+      var trigger = element("pagefind-modal-trigger", attributes);
       placeholder.appendChild(trigger);
       return trigger;
     });
@@ -130,7 +137,8 @@
     // Pagefind returns focus to the first trigger, which is hidden on narrow
     // screens; move it to the one on screen. "close" does not bubble, so
     // this listens in the capture phase, which survives the modal's
-    // re-rendering of its <dialog>.
+    // re-rendering of its <dialog>. Pagefind 1.6.0 also closes the modal
+    // when a result is clicked, which comes through here too.
     modal.addEventListener(
       "close",
       function () {

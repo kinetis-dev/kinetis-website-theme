@@ -4,6 +4,41 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.7.0
+
+Pagefind 1.6.0 for site-wide search: the contract in `docs/SEARCH.md` moves
+from Pagefind 1.5.2 to 1.6.0 for all three kinetis.dev builds. Minor under
+the rule above: no template, component, option or CSS variable is removed.
+Every Pagefind behaviour the theme relies on was re-checked against 1.6.0's
+shipped files.
+
+**Consumer impact:** all three consumers move both Pagefind pins to
+`pagefind[extended]==1.6.0` and `pagefind-bin-extended==1.6.0`, in the same
+PR as the theme pin bump. kinetis and vector-dev also change
+`sphinx>=8.0,<9` to `sphinx>=8.2,<10`, as 0.6.0 requires; consumers can
+skip 0.6.0 and adopt 0.7.0 directly from 0.5.0. Sections on different
+Pagefind versions do not merge each other's bundles (each page searches
+only the sections on its own version, with a `console.warn` for each
+skipped bundle), so deploy all three close together. See
+`docs/CONSUMERS.md`, "Adopting 0.7.0".
+
+Changed:
+
+- `docs/SEARCH.md` pins Pagefind 1.6.0 and records the 1.6.0 behaviours
+  the contract touches: `configureInstance` now applies to an instance
+  that exists but has not loaded; the modal closes when a result is
+  clicked; the shortcut badge is hidden on touch-only devices; a missing
+  merged bundle still fails the whole instance, so the theme keeps probing.
+- `kinetis-search.js` sets `placeholder="Search"` on both modal triggers.
+  Pagefind 1.6.0 resolves the UI language before the first render, so its
+  default trigger label (text and `aria-label`) became the lowercase
+  keyboard hint "search"; 1.5.2 showed "Search". The header looks as in
+  0.6.0.
+- The sample projects and CI index with Pagefind 1.6.0. The search end to
+  end test also checks the trigger labels, and that clicking the current
+  page's own result closes the modal and returns focus to the trigger.
+- Goldens unchanged: with the label kept, they match within tolerance.
+
 ## 0.6.0
 
 Sphinx 9 and pydata-sphinx-theme 0.24.0. Minor under the rule above: a
