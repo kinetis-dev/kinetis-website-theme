@@ -4,9 +4,14 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
-## Unreleased
+## 0.7.1
 
-The blog's sidebar reads as the docs sidebar of kinetis and vector-dev.
+The blog's sidebar reads as the docs sidebar of kinetis and vector-dev. A
+patch: a CSS-only change to the website's blog pages, with no nav, template
+or variable change.
+
+**Consumer impact:** none beyond the pin. Only the website renders the blog
+sidebar; kinetis and vector-dev build unchanged.
 
 Changed:
 
