@@ -6,22 +6,26 @@ theme: the website (`/`, with the blog under `/blog/`), the Kinetis docs
 box on every page searches all of them. This file is the contract the
 theme and the three consumers follow.
 
-Pagefind's behaviour below was checked against Pagefind 1.5.2's
-documentation and its shipped `pagefind.js` and `pagefind-component-ui.js`.
+Pagefind's behaviour below was checked against Pagefind 1.6.0's
+documentation and release notes, its `pagefind` Python package, the CLI of
+`pagefind-bin-extended` 1.6.0, and the `pagefind.js`,
+`pagefind-component-ui.js`, `pagefind-component-ui.css` and
+`pagefind-entry.json` that 1.6.0 writes into a bundle. For 0.7.0 every
+statement was re-checked against those files, compared with 1.5.2's.
 Re-check it whenever the pinned version changes.
 
 ## 1. Pagefind and its version
 
-- Search is [Pagefind](https://pagefind.app/), **1.5.2**, the same version
-  in every repository.
+- Search is [Pagefind](https://pagefind.app/), **1.6.0**, the same version
+  in every repository (from theme 0.7.0; 0.5.0 and 0.6.0 used 1.5.2).
 - Each consumer installs it from PyPI, so no Node is needed anywhere. Pin
   both packages exactly. The wrapper alone accepts any 1.x binary
   (`pagefind-bin-extended>=1,<2`), and bundles built by different binaries
   must not meet in one search (§4.4).
 
   ```
-  pagefind[extended]==1.5.2
-  pagefind-bin-extended==1.5.2
+  pagefind[extended]==1.6.0
+  pagefind-bin-extended==1.6.0
   ```
 
 - Each consumer indexes its own finished build, after `sphinx-build` and
@@ -33,8 +37,14 @@ Re-check it whenever the pinned version changes.
   ```
 
   No other flag and no `pagefind.yml`. The theme's markup (§2, §3) carries
-  everything Pagefind needs. Pagefind exits non-zero only when it finds no
-  HTML page at all. A build that lost its `data-pagefind-body` markers does
+  everything Pagefind needs. In particular no `--max-fragments` (new in
+  1.6.0): without it every indexed page keeps its own fragment file, as in
+  1.5.2. Every Sphinx build has one HTML file Pagefind cannot parse,
+  pydata's `_static/webpack-macros.html` (no `<html>` element), which is
+  harmless. 1.5.2 named it in its output; 1.6.0 prints only "1 page found
+  without an `<html>` element" and names it with `--verbose`. Nothing
+  depends on that output. Pagefind exits non-zero only when
+  it finds no HTML page at all. A build that lost its `data-pagefind-body` markers does
   not fail: Pagefind then indexes every page's whole `<body>`, 404 and
   listings included, and exits 0. The theme's tests pin the indexed page
   set, so a theme release cannot lose the markers unnoticed.
@@ -98,7 +108,10 @@ the first `<h1>` of the raw body.
 
 **Sub-results** (one result per matching heading) are off (§5).
 Pagefind splits pages on headings that have an `id`, but docutils puts the
-ids on the enclosing `<section>`, so Sphinx output yields none.
+ids on the enclosing `<section>`, so Sphinx output yields none. Pagefind
+1.6.0 also splits on any element with both an `id` and a
+`data-pagefind-title`; the theme emits no `data-pagefind-title`, so that
+changes nothing.
 
 ## 3. Sections
 
@@ -150,10 +163,13 @@ bundle resolves to `/pagefind/` and the docs prefixes simply do not exist.
 
 ### 4.2 Probing
 
-Pagefind 1.5.2 has no tolerance for a missing bundle. The Component UI
-merges indexes in a loop with no error handling, and a merged bundle whose
-`pagefind-entry.json` fails to load throws, so the whole instance never
-finishes loading. The theme therefore probes before it configures anything:
+Pagefind 1.6.0, like 1.5.2, has no tolerance for a missing bundle. The
+Component UI merges indexes in a loop with no error handling, and a merged
+bundle whose `pagefind-entry.json` fails to load throws ("Failed to load
+Pagefind metadata", after a `console.error`), so the whole instance never
+finishes loading. 1.6.0's new eviction and retry of failed fetches covers
+index chunks, filters and fragments, not the entry file, so it does not
+change this. The theme therefore probes before it configures anything:
 
 - It sends one `GET <bundle>pagefind-entry.json` per candidate, in
   parallel, with `cache: "no-store"`, when the page loads.
@@ -168,9 +184,13 @@ finishes loading. The theme therefore probes before it configures anything:
   and `pagefind-component-ui.js` from the primary, then calls
   `configureInstance` with `bundlePath` set to the primary and `mergeIndex`
   set to every other present bundle. Only after that does it insert the
-  `<pagefind-*>` elements. `configureInstance` is ignored, with only a
-  `console.warn`, once a component of the same instance has connected, so
-  no `<pagefind-*>` element is in the static HTML.
+  `<pagefind-*>` elements. In 1.6.0 `configureInstance` still applies to an
+  instance that a connected component created but that has not loaded yet
+  (1.5.2 ignored it as soon as the instance existed). Once the instance has
+  loaded it is ignored, with only a `console.warn`. A component loads its
+  instance on first use, which the theme cannot order against a static
+  element, so the theme still configures first and no `<pagefind-*>`
+  element is in the static HTML.
 - **Result URLs** need no option. Pagefind derives each bundle's base URL
   from its path (`/docs/pagefind/` gives `/docs/`), so links from every
   bundle are correct on every section.
@@ -183,7 +203,10 @@ A present bundle whose `version` differs from the primary's is not merged;
 the theme logs one `console.warn` for it. Merged indexes are searched with
 the primary's WebAssembly, so a skewed bundle could fail at query time. The
 pins in §1 keep the three bundles on one version, so skew only happens
-mid-rollout.
+mid-rollout. A version change of the pins (1.5.2 to 1.6.0 in 0.7.0) is such
+a rollout: the primary is the page's own bundle, so until all three
+sections are on the new version, each searches only the sections on its
+own version.
 
 ### 4.5 What each situation gives
 
@@ -203,7 +226,11 @@ mid-rollout.
   `navbar_persistent` item twice, for wide and narrow screens, and hides one
   copy with `display: none`, under which a `<dialog>` never shows. So each
   placeholder gets its own trigger and the one modal goes in `<body>`:
-  - a `<pagefind-modal-trigger>` in each placeholder;
+  - a `<pagefind-modal-trigger placeholder="Search">` in each placeholder.
+    The label is set because Pagefind 1.6.0 resolves the UI language
+    before the first render, so its default label became the English
+    keyboard hint "search", lowercase. 1.5.2 rendered before the language
+    was set and showed its "Search" fallback;
   - one `<pagefind-modal>` whose contents are, in order:
     - `<pagefind-input>`;
     - a `<pagefind-filter-dropdown filter="section" label="Section">`;
@@ -231,7 +258,15 @@ mid-rollout.
   dialog it does nothing else. Pagefind's listener does not check
   `defaultPrevented`, so the two coexist; a test must prove the modal opens
   exactly once. One difference from pydata: Pagefind ignores the shortcut
-  while focus is in an input, a textarea or contenteditable.
+  while focus is in an input, a textarea or contenteditable. From 1.6.0 the
+  trigger's shortcut badge is hidden on touch-only devices
+  (`@media (hover: none)`); the shortcut itself is unchanged.
+- **Closing on a result.** From 1.6.0, clicking a result link closes the
+  modal before the browser follows it, so a result for the current page
+  does not leave the modal open. That close fires the same `close` event as
+  Escape, so focus first returns to the visible trigger, as after Escape
+  (`kinetis-search.js` moves it there from Pagefind's first, possibly
+  hidden, trigger). The theme adds nothing for it.
 - **`search.html` stays**, at the same URL, with the same `<title>`
   (`Search - Project`). Both docs baselines list it, and its baselined
   anchor `search-results` stays inside the main landmark. The theme
@@ -294,3 +329,8 @@ Order:
    returns results from all four.
 
 Until a section deploys, the other sections search without it (§4.5).
+
+From 0.7.0 the §1 pins are 1.6.0. A consumer bumps both Pagefind pins in
+the same PR as the theme pin, and all three deploy close together: until
+they do, sections on different Pagefind versions do not merge each other's
+bundles (§4.4). `docs/CONSUMERS.md`, "Adopting 0.7.0", has the steps.

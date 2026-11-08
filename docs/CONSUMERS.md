@@ -5,15 +5,16 @@ requirements file. A release reaches a property only through a one-line pin
 bump PR there. Dependabot cannot bump URL requirements, so these are made by
 hand or with `tools/bump_pin.py`.
 
-| Repository | Pin location | Deploys to | Search bundle (0.5.0) | Extras | Status |
+| Repository | Pin location | Deploys to | Search bundle (0.5.0 and later) | Extras | Status |
 |---|---|---|---|---|---|
 | `kinetis-dev/kinetis` | `docs/requirements.txt` | `https://kinetis.dev/docs/` | `/docs/pagefind/` | none | adopts in phase 3 |
 | `kinetis-dev/vector-dev` | `docs/requirements.txt` | `https://kinetis.dev/vector/docs/` | `/vector/docs/pagefind/` | none | adopts in phase 2 |
 | `kinetis-dev/kinetis-website` | `site/requirements.txt` | `https://kinetis.dev/` | `/pagefind/` | `[blog,notfound]` | future, when `site/` exists (phase 5b) |
 
-From 0.5.0 the same requirements file also pins Pagefind
-(`pagefind[extended]==1.5.2`, `pagefind-bin-extended==1.5.2`), and each
-build is indexed into its search bundle; see "Adopting 0.5.0".
+From 0.5.0 the same requirements file also pins Pagefind, and each build
+is indexed into its search bundle; see "Adopting 0.5.0". From 0.7.0 the
+pins are `pagefind[extended]==1.6.0` and `pagefind-bin-extended==1.6.0`
+(0.5.0 and 0.6.0 used 1.5.2); see "Adopting 0.7.0".
 
 The pin line:
 
@@ -88,6 +89,9 @@ consumer, in the PR that bumps the pin:
    pagefind-bin-extended==1.5.2
    ```
 
+   These are 0.5.0's pins; a consumer adopting 0.7.0 uses 1.6.0 instead
+   (see "Adopting 0.7.0").
+
 2. Indexes its finished build in CI and in the deploy workflow, after
    `sphinx-build` and after any step that removes files from the output, and
    before the build's checks:
@@ -125,12 +129,43 @@ to `sphinx>=8.2,<10`; without it pip keeps Sphinx 8. The website has no
 Sphinx line and changes nothing but the pin. No nav change, so the order
 does not matter. Search is unchanged: Pagefind stays 1.5.2.
 
+## Adopting 0.7.0
+
+Pagefind 1.6.0 for site-wide search; `docs/SEARCH.md` is the contract.
+Nothing else in the theme changes. A consumer still on 0.5.0 goes straight
+to 0.7.0 in one PR and skips 0.6.0. In the PR that bumps the pin:
+
+1. Changes both Pagefind pins in the same requirements file to 1.6.0:
+
+   ```
+   pagefind[extended]==1.6.0
+   pagefind-bin-extended==1.6.0
+   ```
+
+2. kinetis and vector-dev only, if not already done for 0.6.0: change
+   `sphinx>=8.0,<9` to `sphinx>=8.2,<10`, as 0.6.0 requires. Without it pip
+   keeps Sphinx 8. The website has no Sphinx line.
+
+3. Changes nothing in how the build is indexed: still
+   `python -m pagefind --site <output-dir>`, no other flag.
+
+Coming from 0.5.0, the 0.6.0 changes also arrive (see the CHANGELOG): Sphinx
+9 and pydata-sphinx-theme 0.24.0, with no option, template or CSS change for
+consumers.
+
+Order: release the theme, then deploy all three close together, in any
+order. A page searches only the sections whose bundle is on its own
+Pagefind version, and logs a `console.warn` for each bundle it skips, so
+until the last section deploys, sections on 1.5.2 and on 1.6.0 do not find
+each other's pages. Then confirm that a search from each section returns
+results from all four.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
 
 ```sh
-python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.5.0
+python3 /path/to/kinetis-website-theme/tools/bump_pin.py docs/requirements.txt 0.7.0
 ```
 
 It rewrites only the pin line, keeps any extras, and prints the diff. It

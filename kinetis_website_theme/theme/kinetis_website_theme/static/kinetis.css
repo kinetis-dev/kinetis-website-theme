@@ -85,7 +85,7 @@ article table.docutils {
 }
 
 /* Site-wide search (docs/SEARCH.md §5): Pagefind's Component UI, loaded
-   from a bundle at runtime by kinetis-search.js. Pagefind 1.5.2's
+   from a bundle at runtime by kinetis-search.js. Pagefind 1.6.0's
    stylesheet declares its --pf-* defaults on :root and its dark set on
    [data-pf-theme="dark"], both specificity (0,1,0); it has no
    prefers-color-scheme rule, and nothing here sets data-pf-theme. The

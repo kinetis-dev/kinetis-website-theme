@@ -13,6 +13,9 @@ Chromium:
 
 - a search from every block returns results from all four, with the right
   URLs and section labels;
+- both triggers are labelled "Search" (text and aria-label);
+- in the modal, clicking the current page's own result closes it and
+  focus returns to the trigger (Pagefind 1.6.0);
 - without the Vector bundle, the rest still searches;
 - a Vector bundle of another Pagefind version is left out, with one warning;
 - with no bundle at all there is no search UI and no console error;
@@ -190,6 +193,12 @@ def results_in_the_modal(run):
     page = run.page()
     run.open(page, "docs/guide.html")
     run.wait_for_trigger(page)
+    # The label is set, not Pagefind 1.6.0's lowercase default "search".
+    labels = page.eval_on_selector_all(
+        "pagefind-modal-trigger button",
+        "buttons => buttons.map(b => [b.getAttribute('aria-label'), b.querySelector('.pf-trigger-text')?.textContent ?? null])")
+    run.check(sorted(labels, key=str) == [["Search", "Search"], ["Search", None]],
+              f"triggers: labelled 'Search', the compact one without text ({labels})")
     page.click(".navbar-persistent--container pagefind-modal-trigger button")
     page.wait_for_selector("pagefind-modal dialog[open] pagefind-input input")
     page.fill("pagefind-modal pagefind-input input", "Configuration guide")
@@ -208,6 +217,15 @@ def results_in_the_modal(run):
     options = page.eval_on_selector("pagefind-modal pagefind-filter-dropdown", "d => d.textContent")
     run.check("Section" in options, f"modal: the Section filter is shown ({options!r})")
     run.check(page.locator("pagefind-modal .pf-heading-chips").count() == 0, "modal: no sub-results")
+    # Pagefind 1.6.0 closes the modal on a result click, before the browser
+    # follows the link. Hold the navigation so a click on this page's own
+    # result shows the close: no modal left open, focus on the trigger.
+    page.evaluate("document.addEventListener('click', e => e.target.closest('.pf-result-link') && e.preventDefault())")
+    page.click("pagefind-modal .pf-result-link[href=\"/docs/guide.html\"]")
+    page.wait_for_selector("pagefind-modal dialog[open]", state="detached")
+    run.eventually(page, "!!document.activeElement.closest('.navbar-persistent--container pagefind-modal-trigger')",
+                   "modal: a click on the current page's result closes it, focus on the trigger")
+    run.check(not run.console_errors(page), f"modal: no console errors ({run.console_errors(page)})")
     page.context.close()
 
 

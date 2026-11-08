@@ -22,7 +22,7 @@ from sphinx.util import logging
 
 from .nav import NAV, SEARCH_BUNDLES, active_section, search_section
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 logger = logging.getLogger(__name__)
 

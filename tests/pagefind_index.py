@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 # The version every consumer pins (docs/SEARCH.md §1); CI installs it.
-PAGEFIND_VERSION = "1.5.2"
+PAGEFIND_VERSION = "1.6.0"
 SIGNATURE = b"pagefind_dcd"
 
 

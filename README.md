@@ -18,14 +18,14 @@ adding a navbar and footer that all three properties share.
 Pin the release in the consumer's `requirements.txt`, replacing `furo`:
 
 ```
-kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.5.0/kinetis_website_theme-0.5.0-py3-none-any.whl
+kinetis-website-theme @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.7.0/kinetis_website_theme-0.7.0-py3-none-any.whl
 ```
 
 The website, which needs ABlog and the 404 page, adds the extras (pip
 accepts extras on a direct-URL requirement):
 
 ```
-kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.5.0/kinetis_website_theme-0.5.0-py3-none-any.whl
+kinetis-website-theme[blog,notfound] @ https://github.com/kinetis-dev/kinetis-website-theme/releases/download/v0.7.0/kinetis_website_theme-0.7.0-py3-none-any.whl
 ```
 
 pip downloads only the theme from that URL and resolves its dependencies
@@ -111,10 +111,10 @@ up in.
 ### Search
 
 `docs/SEARCH.md` is the contract; `docs/CONSUMERS.md` has the consumer
-steps. Each consumer pins `pagefind[extended]==1.5.2` and
-`pagefind-bin-extended==1.5.2` and runs `python -m pagefind --site
-<output-dir>` after `sphinx-build`, which writes the bundle to
-`<output-dir>/pagefind/`. The theme supplies everything else:
+steps. From 0.7.0 each consumer pins `pagefind[extended]==1.6.0` and
+`pagefind-bin-extended==1.6.0` (1.5.2 with 0.5.0 and 0.6.0) and runs
+`python -m pagefind --site <output-dir>` after `sphinx-build`, which writes
+the bundle to `<output-dir>/pagefind/`. The theme supplies everything else:
 
 - **Index markup.** A page is indexed when it is a source document and not
   noindex. Only those pages carry `data-pagefind-body`, on the article

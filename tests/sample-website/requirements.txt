@@ -9,5 +9,5 @@ ablog==0.11.13
 sphinx-notfound-page==1.1.0
 # Site-wide search, as every consumer pins it (docs/SEARCH.md §1): CI
 # indexes the build with `python -m pagefind --site <out>` after building it.
-pagefind[extended]==1.5.2
-pagefind-bin-extended==1.5.2
+pagefind[extended]==1.6.0
+pagefind-bin-extended==1.6.0
