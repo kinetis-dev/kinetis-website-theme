@@ -202,20 +202,74 @@ html[data-theme="dark"] {
 }
 
 /* Sidebar blocks (ablog/postcard.html, recentposts.html, tagcloud.html,
-   categories.html, archives.html): headings at the sidebar header size
-   rather than h2/h3 size, lists without bullets. */
+   categories.html, archives.html), styled as the docs sidebar's section
+   navigation (pydata's nav.bd-links): each heading is a caption
+   (p.caption), each entry a muted link without underline, padded as a
+   nav entry, that turns amber with pydata's thick underline on hover. */
 .bd-sidebar .ablog-sidebar-item h2,
 .bd-sidebar .ablog-sidebar-item h3 {
     margin: 0 0 0.5rem;
     color: var(--pst-color-text-base);
-    font-size: var(--pst-sidebar-header-font-size);
+    font-size: var(--pst-sidebar-font-size);
     font-weight: var(--pst-sidebar-header-font-weight);
 }
 
+/* No gap: pydata's ablog rules space the entries 0.5em apart, on top of
+   the padding the docs entries alone have. */
 .bd-sidebar .ablog-sidebar-item ul {
+    gap: 0;
+    margin: 0;
     padding-left: 0;
     list-style: none;
     font-size: var(--pst-sidebar-font-size);
+}
+
+.bd-sidebar .ablog-sidebar-item a {
+    color: var(--pst-color-text-muted);
+    text-decoration: none;
+}
+
+/* A heading's link ("Recent Posts", "Tags", ...) is a caption. */
+.bd-sidebar .ablog-sidebar-item h2 a,
+.bd-sidebar .ablog-sidebar-item h3 a {
+    color: inherit;
+}
+
+.bd-sidebar .ablog-sidebar-item a:hover,
+.bd-sidebar .ablog-sidebar-item a:active {
+    color: var(--pst-color-link-hover);
+    text-decoration: underline;
+    text-decoration-skip-ink: none;
+    text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+}
+
+/* One entry per row, as nav.bd-links li > a. */
+.bd-sidebar .ablog__recentposts li > a,
+.bd-sidebar .ablog__categories li > a,
+.bd-sidebar .ablog__archives li > a {
+    display: block;
+    padding: 0.25rem 0.65rem;
+}
+
+/* The post card's author, category and tags rows: icon and links on one
+   line, on the same inset as the entries. */
+.bd-sidebar .ablog__postcard li {
+    padding: 0.25rem 0.65rem;
+}
+
+/* The tag cloud at one size, on the same inset: ablog's tagcloud.css
+   scales tags from 80% to 170%. */
+.bd-sidebar .ablog-sidebar-item ul.ablog-cloud {
+    gap: 0 0.65rem;
+    padding: 0 0.65rem;
+}
+
+.bd-sidebar .ablog-sidebar-item li.ablog-cloud {
+    height: auto;
+    margin-right: 0;
+    padding: 0.25rem 0;
+    font-size: inherit;
+    line-height: inherit;
 }
 
 .ablog-sidebar-item .fa,

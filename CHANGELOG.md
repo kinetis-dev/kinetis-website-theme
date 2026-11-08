@@ -4,6 +4,22 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## Unreleased
+
+The blog's sidebar reads as the docs sidebar of kinetis and vector-dev.
+
+Changed:
+
+- `kinetis.css` styles ablog's sidebar blocks (post card, recent posts,
+  tags, categories, archives) as pydata's section navigation: headings at
+  the caption size (`--pst-sidebar-font-size`) rather than
+  `--pst-sidebar-header-font-size`, entries as muted links without an
+  underline, padded and spaced as the docs entries, amber with the thick
+  underline on hover. The tag cloud shows every tag at one size instead
+  of ablog's 80% to 170% scale.
+- The `website-blog-post` light and dark goldens are re-captured for this
+  intended change; every other golden is unchanged.
+
 ## 0.7.0
 
 Pagefind 1.6.0 for site-wide search: the contract in `docs/SEARCH.md` moves
