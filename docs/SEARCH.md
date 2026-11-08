@@ -224,7 +224,7 @@ mid-rollout.
   emit everything else pydata's block does (viewport, `color-scheme`, the
   `docsearch:*` metas and `docbuild:last-update`), then the favicons and the
   noindex meta as now. This is a copy of a block of the pinned pydata
-  0.23.0, so a test pins its output.
+  0.24.0 (unchanged since 0.23.0), so a test pins its output.
 - **Shortcut.** Ctrl+K, or ⌘K on macOS, opens the modal: Pagefind's default
   `mod+k`. Escape closes it and focus returns to the trigger. pydata's own
   listener stays registered and calls `preventDefault()`, but with no search

@@ -18,7 +18,7 @@
   {%- endif %}
 {%- endblock %}
 
-{#- The metas are pydata 0.23.0's extrahead, copied without the three Sphinx
+{#- The metas are pydata 0.24.0's extrahead, copied without the three Sphinx
    search scripts it loads on every page (searchtools.js, language_data.js,
    searchindex.js): search is Pagefind's (docs/SEARCH.md §5).
    tests/test_sample_site.py pins both this output and pydata's block;
@@ -67,7 +67,7 @@
 
 {% block docs_toc %}
               {% if not remove_sidebar_secondary %}
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc" data-pagefind-ignore>{% include "sections/sidebar-secondary.html" %}</div>
               {% endif %}
 {% endblock docs_toc %}

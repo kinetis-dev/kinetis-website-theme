@@ -4,6 +4,32 @@ All notable changes to this theme. Versions follow semantic versioning: nav
 changes and pydata-sphinx-theme bumps are minor, template or variable
 removals are major.
 
+## 0.6.0
+
+Sphinx 9 and pydata-sphinx-theme 0.24.0. Minor under the rule above: a
+pydata bump, with no template, component, option or CSS variable removed.
+
+**Consumer impact:** kinetis and vector-dev pin `sphinx>=8.0,<9` themselves;
+change it to `sphinx>=8.2,<10` in the pin-bump PR, or they stay on Sphinx 8.
+On the CI's Python 3.12, pip resolves Sphinx 9.1 (9.2 needs Python 3.13).
+The website changes only the pin. Bump in any order. sphinx-sitemap 2.9.0
+and ablog 0.11.13 build under Sphinx 9 with `-W`; both emit a
+`RemovedInSphinx11Warning`, which is not an error.
+
+Changed:
+
+- Requires `sphinx>=8.2,<10` (was `>=8.0,<9`) and pins
+  `pydata-sphinx-theme==0.24.0` (was `0.23.0`). The floor follows pydata's.
+- Font Awesome icons render from the icon font instead of inline SVG, so
+  their antialiasing differs slightly. The docs prev/next chevrons sit about
+  4 px differently.
+- The blog's "next post" arrow is pydata's dark chevron, matching the docs
+  pages, instead of Font Awesome's orange circled arrow: pydata 0.24.0's
+  ablog styles now apply.
+- The secondary sidebar's `<dialog>` takes `tabindex="-1"`, as pydata
+  0.24.0's own does; the theme's `docs_toc` block copies it.
+- Goldens re-captured.
+
 ## 0.5.0
 
 Site-wide search. Every search box on every kinetis.dev page searches the

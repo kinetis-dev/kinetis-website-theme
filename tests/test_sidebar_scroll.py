@@ -3,7 +3,7 @@
 Each scenario is a short sequence of page loads sharing one fake
 sessionStorage, as one browser tab does across kinetis.dev. A page load runs
 the script in a fresh node:vm context with a minimal document, location and
-window, then pydata-sphinx-theme 0.23.0's own use of the key (read on load,
+window, then pydata-sphinx-theme 0.24.0's own use of the key (read on load,
 written on beforeunload, only with .bd-docs-nav), so the assertions see what
 pydata would read. Skipped when node is not on PATH.
 """
@@ -67,7 +67,7 @@ for (const load of JSON.parse(loadsJson)) {
   try {
     vm.runInContext(code, context, { filename: scriptPath });
     result.afterLoad = snapshot();
-    // pydata 0.23.0, deferred, after the head scripts.
+    // pydata 0.24.0, deferred, after the head scripts.
     if (load.docsNav && !load.storage) {
       const t = parseInt(storage.getItem("sidebar-scroll-top"), 10);
       result.pydataRead = isNaN(t) ? null : t;

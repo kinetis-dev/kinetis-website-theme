@@ -1,6 +1,6 @@
 /* One primary-sidebar scroll memory per docs set.
  *
- * pydata-sphinx-theme 0.23.0 (scripts/pydata-sphinx-theme.js, deferred)
+ * pydata-sphinx-theme 0.24.0 (scripts/pydata-sphinx-theme.js, deferred)
  * restores div.bd-sidebar's scrollTop from sessionStorage key
  * "sidebar-scroll-top" on pages with .bd-docs-nav, and writes it back on
  * beforeunload. sessionStorage is per origin, so /docs/ and /vector/docs/ on

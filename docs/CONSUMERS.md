@@ -116,6 +116,15 @@ section deploys, the others search without it. A build served on its own
 after indexing (`python -m http.server -d <output-dir>`) searches only
 itself; one that is not indexed shows no search box.
 
+## Adopting 0.6.0
+
+Sphinx 9 and pydata-sphinx-theme 0.24.0. The theme now accepts
+`sphinx>=8.2,<10`. kinetis and vector-dev cap Sphinx themselves
+(`sphinx>=8.0,<9`), so in the same PR as the pin bump they change that line
+to `sphinx>=8.2,<10`; without it pip keeps Sphinx 8. The website has no
+Sphinx line and changes nothing but the pin. No nav change, so the order
+does not matter. Search is unchanged: Pagefind stays 1.5.2.
+
 ## Bumping a consumer
 
 From a checkout of the consumer:
