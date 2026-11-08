@@ -409,7 +409,7 @@ def body_markers(raw):
     return re.findall(r"<[a-z]+ [^>]*\bdata-pagefind-body\b[^>]*>", raw)
 
 
-# pydata 0.23.0's extrahead block, verbatim. layout.html copies it without
+# pydata 0.24.0's extrahead block, verbatim. layout.html copies it without
 # the three script lines; when the pin moves and this changes, re-copy it.
 PYDATA_EXTRAHEAD = """{%- block extrahead %}
   <meta name="viewport" content="width=device-width, initial-scale=1"/>

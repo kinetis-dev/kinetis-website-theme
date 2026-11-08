@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kinetis-website-theme"
-version = "0.5.0"
+version = "0.6.0"
 description = "The shared Sphinx theme for kinetis.dev, built on pydata-sphinx-theme."
 readme = "README.md"
 license = "MIT"
@@ -16,8 +16,8 @@ classifiers = [
 ]
 dependencies = [
     # The only place the pydata version is chosen; consumers inherit it.
-    "pydata-sphinx-theme==0.23.0",
-    "sphinx>=8.0,<9",
+    "pydata-sphinx-theme==0.24.0",
+    "sphinx>=8.2,<10",
 ]
 
 [project.optional-dependencies]

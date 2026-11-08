@@ -8,8 +8,10 @@ adding a navbar and footer that all three properties share.
 
 - Distribution `kinetis-website-theme`; import and theme name `kinetis_website_theme`.
 - Released as a wheel on this repository's GitHub releases, not on PyPI.
-- Requires Python 3.11+ and Sphinx 8 (`sphinx>=8.0,<9`). pydata-sphinx-theme
-  is pinned exactly (`==0.23.0`, which itself needs Sphinx 8.2 or later).
+- Requires Python 3.11+ and Sphinx 8.2 or 9 (`sphinx>=8.2,<10`).
+  pydata-sphinx-theme is pinned exactly (`==0.24.0`, which itself needs
+  `sphinx>=8.2,<10`). Sphinx 9.1 needs Python 3.12 and 9.2 needs 3.13; on
+  Python 3.11 pip resolves Sphinx 9.0.
 
 ## Usage
 
